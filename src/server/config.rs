@@ -1,10 +1,10 @@
 use std::fs::File;
 use std::io::{BufReader, Read as _, Write as _};
+use std::path::PathBuf;
 use std::sync::RwLock;
 
-use clap::{Arg, Command};
+use clap::Parser;
 use fuzion_commons::config::{DatabaseConfig, HttpConfigWithPublic, LoggingConfig};
-use fuzion_commons::serde::str_to_log_level;
 use toml;
 
 const DEFAULT_CONFIG: &'static str = r##"encoding = "utf-8"
@@ -31,11 +31,11 @@ name = "fuzion"
 "##;
 
 lazy_static! {
-  pub static ref FUZION_VERITAS_CONFIG: RwLock<Option<FuzionVeritasConfig>> = RwLock::new(None);
+  pub static ref FUZION_VERITA_CONFIG: RwLock<Option<FuzionVeritaConfig>> = RwLock::new(None);
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct FuzionVeritasConfig {
+pub struct FuzionVeritaConfig {
   pub raw: Option<toml::Value>,
 
   pub encoding: String,
@@ -49,9 +49,9 @@ pub struct FuzionVeritasConfig {
   pub http: HttpConfigWithPublic,
 }
 
-impl Default for FuzionVeritasConfig {
+impl Default for FuzionVeritaConfig {
   fn default() -> Self {
-    let config = FuzionVeritasConfig {
+    let config = FuzionVeritaConfig {
       raw: None,
 
       encoding: "utf8".to_owned(),
@@ -67,67 +67,64 @@ impl Default for FuzionVeritasConfig {
   }
 }
 
-impl FuzionVeritasConfig {
-  pub fn set(server_config: FuzionVeritasConfig) {
-    let mut lock = FUZION_VERITAS_CONFIG
+#[derive(Parser, Debug)]
+#[command(version, about)]
+pub struct FuzionVeritaArgs {
+  /// Config file used to start server.
+  #[arg(short, long, value_name = "FILE", default_value = "fuzion-verita.toml")]
+  config: PathBuf,
+  /// If mismatched version, perform migration.
+  #[arg(long)]
+  migrate: Option<bool>,
+  /// If the program is run as a daemon or non-interactive process.
+  #[arg(long)]
+  non_interactive: Option<bool>,
+  /// The verbosity of logging.
+  #[arg(long, short, value_parser = clap_arg_to_log_level)]
+  log_level: Option<slog::Level>,
+}
+
+pub fn clap_arg_to_log_level(level: &str) -> Result<slog::Level, String> {
+  match level {
+    "critical" => Ok(slog::Level::Critical),
+    "debug" => Ok(slog::Level::Debug),
+    "error" => Ok(slog::Level::Error),
+    "trace" => Ok(slog::Level::Trace),
+    "warning" => Ok(slog::Level::Warning),
+    "info" => Ok(slog::Level::Info),
+    _ => Err(String::from("Failed to parse log level.")),
+  }
+}
+
+impl FuzionVeritaConfig {
+  pub fn set(server_config: FuzionVeritaConfig) {
+    let mut lock = FUZION_VERITA_CONFIG
       .write()
       .expect("Could not set ServerConfig");
     *lock = Some(server_config);
   }
 
-  pub fn get() -> FuzionVeritasConfig {
-    let lock = FUZION_VERITAS_CONFIG
+  pub fn get() -> FuzionVeritaConfig {
+    let lock = FUZION_VERITA_CONFIG
       .read()
       .expect("Could not get ServerConfig");
     (*lock).as_ref().unwrap().to_owned()
   }
 
-  pub fn load() -> FuzionVeritasConfig {
-    let matches = Command::new("fuzion-arbiter")
-      .version(env!("CARGO_PKG_VERSION"))
-      .author("enzi (enzi@braindead.io)")
-      .about("Does awesome things.")
-      .arg(
-        Arg::new("migrate")
-          .long("migrate")
-          .help("If mismatched version, allow migration."),
-      )
-      .arg(
-        Arg::new("non-interactive")
-          .long("non-interactive")
-          .help("If the program is run as a daemon or non-interactive process."),
-      )
-      .arg(
-        Arg::new("log-level")
-          .long("log-level")
-          .help("The verbosity of logging."),
-      )
-      .arg(
-        Arg::new("config")
-          .long("config")
-          .help("Config file used to start server."),
-      )
-      .get_matches();
+  pub fn load() -> FuzionVeritaConfig {
+    let args = FuzionVeritaArgs::parse();
 
-    let config_file = matches
-      .get_one::<String>("config")
-      .map(|val| val.to_owned())
-      .unwrap_or("fuzion-arbiter.toml".to_owned());
-
-    let mut config = FuzionVeritasConfig::load_from_file(&config_file);
+    let mut config = FuzionVeritaConfig::load_from_file(&args.config);
 
     // Apply command line arguments.
-    config.migrate = matches.contains_id("migrate");
-    config.interactive = !matches.contains_id("non-interactive");
-    config.logging.log_level = matches
-      .get_one::<String>("verbosity")
-      .and_then(|value| str_to_log_level(Some(value as &str)).ok())
-      .unwrap_or(config.logging.log_level);
+    config.migrate = args.migrate.unwrap_or(false);
+    config.interactive = !args.non_interactive.unwrap_or(false);
+    config.logging.log_level = args.log_level.unwrap_or(config.logging.log_level);
 
     config
   }
 
-  pub fn load_from_file(path: &str) -> FuzionVeritasConfig {
+  pub fn load_from_file(path: &PathBuf) -> FuzionVeritaConfig {
     let toml = match File::open(path) {
       Ok(file) => {
         let mut buf_reader = BufReader::new(file);
@@ -150,13 +147,13 @@ impl FuzionVeritasConfig {
       }
     };
 
-    FuzionVeritasConfig::load_from_toml(toml.expect("Could not parse toml."))
+    FuzionVeritaConfig::load_from_toml(toml.expect("Could not parse toml."))
   }
 
-  pub fn load_from_toml(toml: toml::Value) -> FuzionVeritasConfig {
+  pub fn load_from_toml(toml: toml::Value) -> FuzionVeritaConfig {
     let raw = toml.clone();
 
-    let mut config: FuzionVeritasConfig = toml.try_into().unwrap();
+    let mut config: FuzionVeritaConfig = toml.try_into().unwrap();
     config.raw = Some(raw);
 
     config

@@ -1,5 +1,5 @@
 [package]
-name = "fuzion-veritas"
+name = "fuzion-verita"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,11 +8,12 @@ edition = "2021"
 [dependencies]
 actix-rt = "2.9.0"
 actix-web = "4.5.1"
-clap = "4.5.3"
+clap = { version = "4.5.3", features = [ "derive" ] }
 deadpool-postgres = "0.12.1"
 fuzion-commons = { path = "../fuzion-commons" }
 lazy_static = "1.4.0"
 log = "0.4.21"
 serde = "1.0.197"
 serde_derive = "1.0.197"
+slog = "2.7.0"
 toml = "0.8.11"

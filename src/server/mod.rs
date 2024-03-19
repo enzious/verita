@@ -5,9 +5,9 @@ use crate::apis;
 
 pub mod config;
 
-use self::config::FuzionVeritasConfig;
+use self::config::FuzionVeritaConfig;
 
-pub async fn build(server_config: &FuzionVeritasConfig) -> Result<Server, ()> {
+pub async fn build(server_config: &FuzionVeritaConfig) -> Result<Server, ()> {
   let srv = {
     let _server_config = server_config.to_owned();
 

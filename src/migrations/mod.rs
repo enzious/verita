@@ -1,9 +1,9 @@
 use fuzion_commons::migration::Migrator;
 use fuzion_commons::migration::BASE_MODULE_NAME;
 
-use crate::server::config::FuzionVeritasConfig;
+use crate::server::config::FuzionVeritaConfig;
 
-pub async fn init(config: &FuzionVeritasConfig, client: deadpool_postgres::Client) {
+pub async fn init(config: &FuzionVeritaConfig, client: deadpool_postgres::Client) {
   if config.migrate {
     let mut migrator = Migrator::new(BASE_MODULE_NAME, client, vec![]);
 

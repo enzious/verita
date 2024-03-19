@@ -11,11 +11,11 @@ pub mod config;
 pub mod migrations;
 pub mod server;
 
-use server::config::FuzionVeritasConfig;
+use server::config::FuzionVeritaConfig;
 
 #[actix_web::main]
 async fn main() -> Result<(), ()> {
-  let server_config = FuzionVeritasConfig::load();
+  let server_config = FuzionVeritaConfig::load();
   logging::init(&server_config.logging);
 
   {
