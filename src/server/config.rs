@@ -7,7 +7,6 @@ use clap::Parser;
 use fuzion_commons::config::{
   clap_arg_to_log_level, DatabaseConfig, HttpConfigWithPublic, LoggingConfig,
 };
-use fuzion_commons::serde::default_false;
 use toml;
 
 const DEFAULT_CONFIG: &'static str = r##"encoding = "utf-8"
@@ -43,7 +42,7 @@ pub struct FuzionVeritaConfig {
   pub raw: Option<toml::Value>,
 
   pub encoding: String,
-  #[serde(default = "default_false")]
+  #[serde(default)]
   pub non_interactive: bool,
   #[serde(default)]
   pub migrate: bool,
@@ -63,7 +62,7 @@ pub struct FuzionVeritaArgs {
   #[arg(long)]
   migrate: Option<bool>,
   /// If the program is run as a daemon or non-interactive process.
-  #[arg(short, long, default_value = "false")]
+  #[arg(short, long)]
   non_interactive: Option<bool>,
   /// The verbosity of logging.
   #[arg(long, short, value_parser = clap_arg_to_log_level)]
