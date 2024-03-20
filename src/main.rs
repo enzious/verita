@@ -7,7 +7,6 @@ use actix_rt::signal;
 use fuzion_commons::logging;
 
 pub mod apis;
-pub mod config;
 pub mod migrations;
 pub mod server;
 
