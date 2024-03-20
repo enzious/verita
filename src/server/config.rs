@@ -47,6 +47,9 @@ pub struct FuzionVeritaConfig {
   #[serde(default)]
   pub migrate: bool,
 
+  pub admin: Option<String>,
+  pub admin_password: Option<String>,
+
   pub logging: LoggingConfig,
   pub database: DatabaseConfig,
   pub http: HttpConfigWithPublic,
@@ -67,6 +70,12 @@ pub struct FuzionVeritaArgs {
   /// The verbosity of logging.
   #[arg(long, short, value_parser = clap_arg_to_log_level)]
   log_level: Option<slog::Level>,
+  /// Username for the Verita admin.
+  #[arg(long, env)]
+  admin: Option<String>,
+  /// Password for the Verita admin.
+  #[arg(long, env)]
+  admin_password: Option<String>,
 }
 
 impl FuzionVeritaConfig {
@@ -94,6 +103,9 @@ impl FuzionVeritaConfig {
     config.migrate = args.migrate.unwrap_or(config.migrate);
     config.non_interactive = !args.non_interactive.unwrap_or(config.non_interactive);
     config.logging.log_level = args.log_level.unwrap_or(config.logging.log_level);
+
+    config.admin = args.admin.or(config.admin);
+    config.admin_password = args.admin_password.or(config.admin_password);
 
     config
   }
