@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
+extern crate log;
+#[macro_use]
 extern crate serde_derive;
 
 use actix_rt::signal;
@@ -14,21 +16,12 @@ use server::config::FuzionVeritaConfig;
 
 #[actix_web::main]
 async fn main() -> Result<(), ()> {
-  let server_config = FuzionVeritaConfig::load();
-  logging::init(&server_config.logging);
+  let config = FuzionVeritaConfig::load();
 
-  {
-    let db_pool = server_config
-      .database
-      .get_db_pool()
-      .await
-      .expect("Failed to initialize DB pool.");
+  logging::init(&config.logging);
+  migrations::init(&config).await;
 
-    let db_conn = db_pool.get().await.expect("");
-    migrations::init(&server_config, db_conn).await;
-  }
-
-  let srv = server::build(&server_config).await.map_err(|_| ())?;
+  let srv = server::build(&config).await?;
 
   let srv_handle = srv.handle();
 

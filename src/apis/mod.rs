@@ -1,3 +1,7 @@
 use actix_web::*;
 
-pub fn build(_config: &mut web::ServiceConfig) {}
+mod hello;
+
+pub fn build(config: &mut web::ServiceConfig) {
+  config.service(web::resource("/").route(web::get().to(hello::hello)));
+}

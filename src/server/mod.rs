@@ -8,6 +8,11 @@ pub mod config;
 use self::config::FuzionVeritaConfig;
 
 pub async fn build(server_config: &FuzionVeritaConfig) -> Result<Server, ()> {
+  info!(
+    "Listening at: {}:{}",
+    &server_config.http.host, &server_config.http.port
+  );
+
   let srv = {
     let _server_config = server_config.to_owned();
 
