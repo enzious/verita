@@ -10,7 +10,9 @@ use fuzion_commons::logging;
 
 pub mod apis;
 pub mod migrations;
+pub mod repos;
 pub mod server;
+pub mod services;
 
 use server::config::FuzionVeritaConfig;
 

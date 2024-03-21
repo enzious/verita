@@ -882,15 +882,19 @@ dependencies = [
  "actix-files",
  "actix-rt",
  "actix-web",
+ "actix-web-thiserror",
  "clap",
  "colored",
  "deadpool-postgres",
  "fuzion-commons",
  "lazy_static",
  "log",
+ "postgres",
  "serde",
  "serde_derive",
+ "serde_json",
  "slog",
+ "thiserror",
  "toml",
 ]
 
@@ -1299,6 +1303,20 @@ name = "pkg-config"
 version = "0.3.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+
+[[package]]
+name = "postgres"
+version = "0.19.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7915b33ed60abc46040cbcaa25ffa1c7ec240668e0477c4f3070786f5916d451"
+dependencies = [
+ "bytes",
+ "fallible-iterator",
+ "futures-util",
+ "log",
+ "tokio",
+ "tokio-postgres",
+]
 
 [[package]]
 name = "postgres-protocol"
