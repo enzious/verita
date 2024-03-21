@@ -1,22 +1,38 @@
-CREATE TABLE realm (
+CREATE SCHEMA verita;
+
+CREATE TABLE verita.realm (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  created TIMESTAMPTZ,
+  updated TIMESTAMPTZ,
+  UNIQUE (name)
 );
 
-CREATE TABLE "user" (
+CREATE TABLE verita."user" (
   id BIGSERIAL PRIMARY KEY,
-  realm_id INTEGER REFERENCES realm (id),
-  name TEXT NOT NULL
+  realm_id INTEGER
+    REFERENCES realm (id),
+  username TEXT NOT NULL,
+  email TEXT,
+  created TIMESTAMPTZ,
+  updated TIMESTAMPTZ,
+  UNIQUE (realm_id, username)
 );
 
-CREATE TABLE user_credential (
-  user_id BIGINT REFERENCES "user" (id),
-  credential_config_id INTEGER REFERENCES credential_config (id),
-  content TEXT
+CREATE TABLE verita.user_credential (
+  user_id BIGINT PRIMARY KEY 
+    REFERENCES "user" (id),
+  credential_config_id INTEGER
+    REFERENCES credential_config (id),
+  content TEXT,
+  created TIMESTAMPTZ,
+  updated TIMESTAMPTZ
 );
 
-CREATE TABLE credential_config (
+CREATE TABLE verita.credential_config (
   id SERIAL PRIMARY KEY,
   hash TEXT NOT NULL,
-  salt TEXT
+  salt TEXT,
+  created TIMESTAMPTZ,
+  updated TIMESTAMPTZ
 );
