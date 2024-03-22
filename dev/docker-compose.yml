@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+
+  verita-db:
+    image: postgres:12
+    restart: always
+    environment:
+      - POSTGRES_DB=${VERITA_DB_NAME}
+      - POSTGRES_USER=${VERITA_DB_USER}
+      - POSTGRES_PASSWORD=${VERITA_DB_PASSWORD}
+    volumes:
+      - ./verita-db-data:/var/lib/postgresql/data
+    ports:
+      - "4432:5432"

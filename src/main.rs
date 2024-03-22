@@ -16,6 +16,7 @@ pub mod server;
 pub mod services;
 
 use server::config::FuzionVeritaConfig;
+use services::setup::SetupService;
 
 #[actix_web::main]
 async fn main() -> Result<(), ()> {
@@ -23,6 +24,8 @@ async fn main() -> Result<(), ()> {
 
   logging::init(&config.logging);
   migrations::init(&config).await;
+
+  SetupService::init(&config).await.expect("Setup failed.");
 
   let srv = server::build(&config).await?;
 

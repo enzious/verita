@@ -3,7 +3,7 @@ use std::io::{BufReader, Read as _, Write as _};
 use std::path::PathBuf;
 use std::sync::RwLock;
 
-use clap::Parser;
+use clap::{ArgAction, Parser};
 use fuzion_commons::config::{
   clap_arg_to_log_level, DatabaseConfig, HttpConfigWithPublic, LoggingConfig,
 };
@@ -16,9 +16,8 @@ host = "0.0.0.0"
 port = 10666
 
 [http.public]
-host = "fuziondev"
-port = 8182
-secure = true
+host = "127.0.0.1"
+port = 10666
 
 [logging]
 log_to_stdout = true
@@ -26,10 +25,10 @@ log_level = "info"
 
 [database]
 host = "127.0.0.1"
-port = 8432
-user = "fuzion"
+port = 4432
+user = "verita"
 password = "CHANGEME"
-name = "fuzion"
+name = "verita"
 "##;
 
 lazy_static! {
@@ -62,10 +61,10 @@ pub struct FuzionVeritaArgs {
   #[arg(short, long, value_name = "FILE", default_value = "fuzion-verita.toml")]
   config: PathBuf,
   /// If mismatched version, perform migration.
-  #[arg(long)]
+  #[arg(long, action = ArgAction::SetTrue)]
   migrate: Option<bool>,
   /// If the program is run as a daemon or non-interactive process.
-  #[arg(short, long)]
+  #[arg(short, long, action = ArgAction::SetTrue)]
   non_interactive: Option<bool>,
   /// The verbosity of logging.
   #[arg(long, short, value_parser = clap_arg_to_log_level)]

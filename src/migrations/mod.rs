@@ -14,11 +14,12 @@ pub async fn init(config: &FuzionVeritaConfig) {
       .await
       .expect("Failed to initialize database pool.");
 
-    let db_conn = db_pool
+    let db_client = db_pool
       .get()
       .await
       .expect("Failed to get database connection.");
-    let mut migrator = Migrator::new("verita", db_conn, vec![Box::new(V0_1_0 {})]);
+
+    let mut migrator = Migrator::new("verita", db_client, vec![Box::new(V0_1_0 {})]);
 
     if let Err(err) = migrator.migrate().await {
       panic!("Failed to migrate database: {}", &err);

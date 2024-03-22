@@ -899,6 +899,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "slog",
+ "smart-default",
  "thiserror",
  "toml",
 ]
