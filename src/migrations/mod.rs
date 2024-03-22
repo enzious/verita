@@ -1,7 +1,10 @@
 use fuzion_commons::migration::Migrator;
-use fuzion_commons::migration::BASE_MODULE_NAME;
 
 use crate::server::config::FuzionVeritaConfig;
+
+pub mod v0_1_0;
+
+pub use v0_1_0::*;
 
 pub async fn init(config: &FuzionVeritaConfig) {
   if config.migrate {
@@ -9,10 +12,13 @@ pub async fn init(config: &FuzionVeritaConfig) {
       .database
       .get_db_pool()
       .await
-      .expect("Failed to initialize DB pool.");
+      .expect("Failed to initialize database pool.");
 
-    let db_conn = db_pool.get().await.expect("");
-    let mut migrator = Migrator::new(BASE_MODULE_NAME, db_conn, vec![]);
+    let db_conn = db_pool
+      .get()
+      .await
+      .expect("Failed to get database connection.");
+    let mut migrator = Migrator::new("verita", db_conn, vec![Box::new(V0_1_0 {})]);
 
     if let Err(err) = migrator.migrate().await {
       panic!("Failed to migrate database: {}", &err);

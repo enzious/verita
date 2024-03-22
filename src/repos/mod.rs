@@ -2,6 +2,9 @@ use actix_web_thiserror::ResponseError;
 use fuzion_commons::db::PgClientError;
 use thiserror::Error;
 
+pub mod credential;
+pub mod realm;
+pub mod session;
 pub mod user;
 
 #[derive(Debug, Error, ResponseError)]

@@ -9,6 +9,7 @@ pub struct User {
   pub realm_id: i32,
   pub username: String,
   pub email: Option<String>,
+  pub email_verified: bool,
   pub created: DateTime<Utc>,
   pub updated: DateTime<Utc>,
 }
@@ -19,4 +20,5 @@ pub struct UserCredential {
   pub content: String,
   pub created: DateTime<Utc>,
   pub updated: DateTime<Utc>,
+  pub temporary: bool,
 }
