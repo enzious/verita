@@ -58,6 +58,8 @@ impl SetupService {
       _ => Err(SetupServiceError::InternalError)?,
     };
 
+    txn.commit().await?;
+
     Ok(())
   }
 }

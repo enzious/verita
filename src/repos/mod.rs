@@ -11,6 +11,8 @@ pub mod user;
 pub enum RepoError {
   #[error("internal error")]
   Internal,
+  #[error("no record")]
+  NoRecord,
   #[error(transparent)]
   Postgres(#[from] postgres::Error),
   #[error(transparent)]

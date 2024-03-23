@@ -6,7 +6,7 @@ use super::{credential::CredentialConfigId, realm::RealmId};
 
 pub type UserId = i64;
 
-#[derive(SmartDefault)]
+#[derive(Clone, Debug, SmartDefault)]
 pub struct User {
   pub id: Option<UserId>,
   pub realm_id: i32,
@@ -35,10 +35,11 @@ impl From<&Row> for User {
   }
 }
 
+#[derive(Clone, Debug, SmartDefault)]
 pub struct UserCredential {
   pub user_id: UserId,
   pub credential_config_id: CredentialConfigId,
-  pub content: String,
+  pub content: Vec<u8>,
   pub temporary: bool,
   pub created: DateTime<Utc>,
   pub updated: DateTime<Utc>,
@@ -49,7 +50,7 @@ impl From<&Row> for UserCredential {
     UserCredential {
       user_id: row.get::<_, UserId>("user_id"),
       credential_config_id: row.get::<_, CredentialConfigId>("credential_config_id"),
-      content: row.get::<_, String>("content"),
+      content: row.get::<_, Vec<u8>>("content"),
       temporary: row.get::<_, bool>("temporary"),
       created: row.get::<_, DateTime<Utc>>("created"),
       updated: row.get::<_, DateTime<Utc>>("updated"),

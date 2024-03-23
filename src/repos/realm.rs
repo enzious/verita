@@ -33,7 +33,7 @@ INSERT INTO verita.realm (
   created,
   updated
 )
-VALUES ($1, $2, $3)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 "#;
