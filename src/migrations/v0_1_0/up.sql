@@ -27,7 +27,7 @@ CREATE TABLE verita.credential_config (
   id SERIAL PRIMARY KEY,
   realm_id INTEGER NOT NULL
     REFERENCES realm (id),
-  hash BYTEA NOT NULL,
+  algorithm TEXT NOT NULL,
   salt BYTEA,
   iterations INTEGER,
   created TIMESTAMPTZ NOT NULL,

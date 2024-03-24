@@ -10,7 +10,7 @@ pub mod user;
 #[derive(Debug, Error, ResponseError)]
 pub enum RepoError {
   #[error("internal error")]
-  Internal,
+  InternalError,
   #[error("no record")]
   NoRecord,
   #[error(transparent)]

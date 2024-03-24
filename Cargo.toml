@@ -19,7 +19,8 @@ fuzion-commons = { path = "../fuzion-commons" }
 lazy_static = "1.4.0"
 log = "0.4.21"
 postgres = "0.19.7"
-ring = "0.17.8"
+rand = "0.8.5"
+ring = { version = "0.17.8", features = [ "std" ] }
 serde = "1.0.197"
 serde_derive = "1.0.197"
 serde_json = "1.0.114"

@@ -13,6 +13,7 @@ case "$1" in
 
   destroy)
     pushd ./dev
+    docker compose down
     rm -r verita-db-data
     ;;
 

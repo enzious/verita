@@ -7,6 +7,15 @@ use super::RepoError;
 pub struct UserRepo;
 
 impl UserRepo {
+  pub async fn get_user_by_id(
+    db_client: &PgClient<'_>,
+    user_id: UserId,
+  ) -> Result<Option<User>, RepoError> {
+    let stmt = db_client.prepare_cached(STMT_GET_USER_BY_ID).await?;
+    let rows = db_client.query(&stmt, &[&user_id]).await?;
+    Ok(rows.get(0).map(|row| row.into()))
+  }
+
   pub async fn insert_user(db_client: &PgClient<'_>, user: &User) -> Result<User, RepoError> {
     let stmt = db_client.prepare_cached(STMT_INSERT_USER).await?;
     let rows = db_client
@@ -23,7 +32,10 @@ impl UserRepo {
         ],
       )
       .await?;
-    rows.get(0).map(|row| row.into()).ok_or(RepoError::Internal)
+    rows
+      .get(0)
+      .map(|row| row.into())
+      .ok_or(RepoError::InternalError)
   }
 
   pub async fn update_user(db_client: &PgClient<'_>, user: &User) -> Result<User, RepoError> {
@@ -62,7 +74,41 @@ impl UserRepo {
     let rows = db_client.query(&stmt, &[&user_id]).await?;
     Ok(rows.get(0).map(|row| row.into()))
   }
+
+  pub async fn insert_user_credential(
+    db_client: &PgClient<'_>,
+    credential: &UserCredential,
+  ) -> Result<UserCredential, RepoError> {
+    let stmt = db_client
+      .prepare_cached(STMT_INSERT_USER_CREDENTIAL)
+      .await?;
+    let rows = db_client
+      .query(
+        &stmt,
+        &[
+          &credential.user_id,
+          &credential.credential_config_id,
+          &credential.content,
+          &credential.temporary,
+          &credential.created,
+          &credential.updated,
+        ],
+      )
+      .await?;
+    rows
+      .get(0)
+      .map(|row| row.into())
+      .ok_or(RepoError::InternalError)
+  }
 }
+
+static STMT_GET_USER_BY_ID: &'static str = r#"
+
+SELECT *
+FROM verita."user"
+WHERE id = $1
+
+"#;
 
 static STMT_INSERT_USER: &'static str = r#"
 
@@ -109,5 +155,20 @@ static STMT_GET_USER_CREDENTIAL_BY_USER_ID: &'static str = r#"
 SELECT *
 FROM verita.user_credential
 WHERE user_id = $1
+
+"#;
+
+static STMT_INSERT_USER_CREDENTIAL: &'static str = r#"
+
+INSERT INTO verita.user_credential (
+  user_id,
+  credential_config_id,
+  content,
+  temporary,
+  created,
+  updated,
+)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING *;
 
 "#;

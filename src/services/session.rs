@@ -7,7 +7,7 @@ pub struct SessionService;
 impl SessionService {}
 
 #[derive(Debug, Error, ResponseError)]
-pub enum UserServiceError {
+pub enum SessionServiceError {
   #[error("internal error")]
   InternalError,
   #[error(transparent)]

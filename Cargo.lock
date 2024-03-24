@@ -894,6 +894,7 @@ dependencies = [
  "lazy_static",
  "log",
  "postgres",
+ "rand",
  "ring",
  "serde",
  "serde_derive",

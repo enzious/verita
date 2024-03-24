@@ -15,7 +15,10 @@ impl RealmRepo {
         &[&realm.name, &realm.operator, &realm.created, &realm.updated],
       )
       .await?;
-    rows.get(0).map(|row| row.into()).ok_or(RepoError::Internal)
+    rows
+      .get(0)
+      .map(|row| row.into())
+      .ok_or(RepoError::InternalError)
   }
 
   pub async fn get_operator_realm(db_client: &PgClient<'_>) -> Result<Option<Realm>, RepoError> {
