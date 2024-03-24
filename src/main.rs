@@ -31,13 +31,13 @@ async fn main() -> Result<(), VeritaError> {
 
   let srv = server::build(&config).await?;
 
-  let srv_handle = srv.handle();
+  let handle = srv.handle();
 
   actix_rt::spawn(srv);
 
   signal::ctrl_c().await?;
 
-  srv_handle.stop(true).await;
+  handle.stop(true).await;
 
   Ok(())
 }

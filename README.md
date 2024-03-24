@@ -14,6 +14,8 @@ Manages login, registration, identity, roles, and permissions outside your appli
  - cargo
    - Recommended method: https://rustup.rs
  - Docker
+ - Also currently requires `fuzion-commons` to be cloned in same directory.
+   - https://github.com/enzious/fuzion-commons
 
 ## Getting started with development
 
@@ -23,6 +25,6 @@ Clone the repo, then run the following command to start the development environm
 
 Once the environment has initialized, you can run the application with cargo:
 
-    cargo run -- --migrate
+    ADMIN=admin ADMIN_PASSWORD=password cargo run -- --migrate
 
 This will initialize the database with the parameters set in `./dev/.env`
