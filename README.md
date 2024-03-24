@@ -1,1 +1,1 @@
-![verita-logo-and-text(1)](https://github.com/enzious/fuzion-verita/assets/4645608/c0915e29-4813-4649-b313-1f4b0eff3115)
+![image](https://github.com/enzious/fuzion-verita/assets/4645608/39697778-a4a4-43e3-93da-4050c63e9e6c)
