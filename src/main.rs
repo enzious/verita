@@ -15,6 +15,7 @@ pub mod repos;
 pub mod server;
 pub mod services;
 
+use migrations::MigrationInitError;
 use server::config::FuzionVeritaConfig;
 use server::ServerError;
 use services::setup::{SetupService, SetupServiceError};
@@ -25,8 +26,7 @@ async fn main() -> Result<(), VeritaError> {
   let config = FuzionVeritaConfig::load();
 
   logging::init(&config.logging);
-  migrations::init(&config).await;
-
+  migrations::init(&config).await?;
   SetupService::init(&config).await?;
 
   let srv = server::build(&config).await?;
@@ -45,9 +45,11 @@ async fn main() -> Result<(), VeritaError> {
 #[derive(Debug, Error)]
 pub enum VeritaError {
   #[error(transparent)]
+  IoError(#[from] std::io::Error),
+  #[error(transparent)]
+  MigrationInitError(#[from] MigrationInitError),
+  #[error(transparent)]
   SetupServiceError(#[from] SetupServiceError),
   #[error(transparent)]
   ServerError(#[from] ServerError),
-  #[error(transparent)]
-  IoError(#[from] std::io::Error),
 }
