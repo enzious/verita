@@ -15,7 +15,7 @@ impl CredentialService {
     config: &CredentialConfig,
     username: &str,
     credential: &str,
-  ) -> Result<(), CredentialServiceError> {
+  ) -> Result<Vec<u8>, CredentialServiceError> {
     let salt = Self::compile_salt(&config, username);
 
     let mut out: [u8; digest::SHA256_OUTPUT_LEN] = [0u8; digest::SHA256_OUTPUT_LEN];
@@ -28,7 +28,7 @@ impl CredentialService {
       &mut out,
     );
 
-    Ok(())
+    Ok(out.to_vec())
   }
 
   pub fn verify_credential(
@@ -90,7 +90,7 @@ pub enum CredentialServiceError {
 
 #[cfg(test)]
 mod test {
-  use crate::services::credential::CredentialService;
+  use super::CredentialService;
 
   #[test]
   fn generate_salt() {

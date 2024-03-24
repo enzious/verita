@@ -41,7 +41,9 @@ pub struct UserCredential {
   pub credential_config_id: CredentialConfigId,
   pub content: Vec<u8>,
   pub temporary: bool,
+  #[default(_code = "Utc::now()")]
   pub created: DateTime<Utc>,
+  #[default(_code = "Utc::now()")]
   pub updated: DateTime<Utc>,
 }
 

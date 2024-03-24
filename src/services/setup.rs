@@ -12,7 +12,10 @@ use crate::{
   server::config::FuzionVeritaConfig,
 };
 
-use super::user::{UserService, UserServiceError};
+use super::{
+  credential::CredentialServiceError,
+  user::{UserService, UserServiceError},
+};
 
 pub struct SetupService;
 
@@ -32,14 +35,23 @@ impl SetupService {
 
     let txn = db_client.transaction().await?;
 
+    // Set up the operator realm.
     let realm = Self::init_operator_realm(&txn).await?;
     let realm_id = realm.id.ok_or(SetupServiceError::InternalError)?;
 
+    // Set up the operator realm credential config.
     let credential_config = Self::init_operator_realm_credential_config(&txn, realm_id).await?;
 
-    let user = Self::init_operator_user(&txn, realm_id).await?;
+    // Set up the operator user.
+    let user = Self::init_operator_user(
+      &txn,
+      realm_id,
+      config.admin.as_ref().map(|username| username as &str),
+    )
+    .await?;
     let user_id = user.id.ok_or(SetupServiceError::InternalError)?;
 
+    // Set up the operator user credential.
     if let Some(user_password) = &config.admin_password {
       let _ =
         Self::init_operator_user_credential(&txn, &credential_config, user_id, &user_password)
@@ -90,15 +102,34 @@ impl SetupService {
   pub async fn init_operator_user(
     db_client: &PgClient<'_>,
     realm_id: RealmId,
+    username: Option<&str>,
   ) -> Result<User, SetupServiceError> {
     match UserRepo::get_operator_user(&db_client).await? {
-      Some(user) => Ok(user),
+      Some(mut user) => {
+        if let Some(username) = username {
+          if username != user.username {
+            if UserRepo::get_user_by_username(&db_client, realm_id, username)
+              .await?
+              .is_some()
+            {
+              return Err(SetupServiceError::AdminUsernameTaken);
+            }
+
+            user.username = username.to_string();
+            return Ok(UserRepo::update_user(&db_client, &user).await?);
+          }
+        }
+
+        Ok(user)
+      }
       None => Ok(
         UserRepo::insert_user(
           &db_client,
           &User {
             realm_id,
-            username: String::from("verita"),
+            username: username
+              .map(|username| username.to_string())
+              .unwrap_or(String::from("verita")),
             operator: true,
             ..Default::default()
           },
@@ -114,14 +145,23 @@ impl SetupService {
     user_id: UserId,
     credential: &str,
   ) -> Result<UserCredential, SetupServiceError> {
-    let user_credential = UserService::verify_credential(db_client, user_id, credential).await?;
+    let user_credential = UserService::verify_credential(db_client, user_id, credential).await;
 
-    Ok(user_credential)
+    match user_credential {
+      Err(UserServiceError::NoUserCredential)
+      | Err(UserServiceError::CredentialServiceError(
+        CredentialServiceError::RingUnspecifiedError(_),
+      )) => Ok(UserService::update_credential(db_client, user_id, credential).await?),
+      Ok(credential) => Ok(credential),
+      _ => Err(SetupServiceError::InternalError),
+    }
   }
 }
 
 #[derive(Debug, Error, ResponseError)]
 pub enum SetupServiceError {
+  #[error("admin username taken")]
+  AdminUsernameTaken,
   #[error("internal error")]
   InternalError,
   #[error(transparent)]
