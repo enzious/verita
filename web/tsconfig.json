@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "outDir": "../build",
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ],
+    "sourceMap": true,
+    "rootDirs": [
+      "."
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "./src/*",
+        "./src/types/*"
+      ]
+    },
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  },
+  "include": [
+    "src/js/**/*.ts"
+  ],
+}
