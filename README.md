@@ -17,7 +17,7 @@ Manages login, registration, identity, roles, and permissions outside your appli
 
 ## Getting started with development
 
-Clone the repo, then run the following command to start the development environment
+Clone the repo, then run the following command to start the development environment:
 
     ./dev.sh start
 
