@@ -1,6 +1,7 @@
 use actix_web::dev::Server;
 use actix_web::*;
 use colored::Colorize;
+use thiserror::Error;
 
 use crate::apis;
 
@@ -8,7 +9,7 @@ pub mod config;
 
 use self::config::FuzionVeritaConfig;
 
-pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ()> {
+pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ServerError> {
   info!(
     "{} {}",
     "Listening locally at:".blue(),
@@ -36,3 +37,6 @@ pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ()> {
 
   Ok(srv)
 }
+
+#[derive(Debug, Error)]
+pub enum ServerError {}

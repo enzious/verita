@@ -16,16 +16,18 @@ pub mod server;
 pub mod services;
 
 use server::config::FuzionVeritaConfig;
-use services::setup::SetupService;
+use server::ServerError;
+use services::setup::{SetupService, SetupServiceError};
+use thiserror::Error;
 
 #[actix_web::main]
-async fn main() -> Result<(), ()> {
+async fn main() -> Result<(), VeritaError> {
   let config = FuzionVeritaConfig::load();
 
   logging::init(&config.logging);
   migrations::init(&config).await;
 
-  SetupService::init(&config).await.expect("Setup failed.");
+  SetupService::init(&config).await?;
 
   let srv = server::build(&config).await?;
 
@@ -33,9 +35,19 @@ async fn main() -> Result<(), ()> {
 
   actix_rt::spawn(srv);
 
-  signal::ctrl_c().await.map_err(|_| ())?;
+  signal::ctrl_c().await?;
 
   srv_handle.stop(true).await;
 
   Ok(())
+}
+
+#[derive(Debug, Error)]
+pub enum VeritaError {
+  #[error(transparent)]
+  SetupServiceError(#[from] SetupServiceError),
+  #[error(transparent)]
+  ServerError(#[from] ServerError),
+  #[error(transparent)]
+  IoError(#[from] std::io::Error),
 }
