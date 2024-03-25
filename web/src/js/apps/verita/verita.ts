@@ -11,12 +11,13 @@ import { Router, routerContext } from 'fuzionkit/router/context.js';
 import store from './store';
 
 import 'js/pages/landing';
+import 'js/pages/login/login';
 import 'fuzionkit/router/router.js';
 
 export const routes: SwitchRoute[] = [
   [
     '/',
-    'verita-landing',
+    'verita-login-page',
   ],
 ];
 
@@ -50,12 +51,8 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
   @property({ attribute: false })
   history = createBrowserHistory();
 
-  firstUpdated(): void {
-    setInterval(() => console.log(this.router), 5000);
-  }
-
   render(): unknown {
-    return html`<verita-loader></verita-loader>`;
+    // return html`<verita-loader></verita-loader>`;
 
     return html`
       <fzn-router

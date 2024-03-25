@@ -4,12 +4,12 @@ import { customElement } from 'lit/decorators.js';
 
 import 'js/components/loader/loader';
 
-@customElement('verita-landing')
-export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(LitElement) {
+@customElement('verita-landing-page')
+export class Landing extends EnhancedEventTargetMixin<typeof LitElement, Landing>(LitElement) {
   render(): unknown {
     return html`
       <span style="color: white;">
-        <verita-loader></verita-loader>
+        hello
       </span>
     `;
   }
