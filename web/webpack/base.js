@@ -11,7 +11,7 @@ const modules = (
   {
     tsconfigPath,
   } = {
-    tsconfigPath: path.resolve(__dirname, '../tsconfig.json'),
+    tsconfigPath: path.resolve(__dirname, '../tsconfig.webpack.json'),
   },
 ) => ({
   rules: [

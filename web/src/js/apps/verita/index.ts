@@ -1,5 +1,5 @@
-function helloWorld() {
-  return 'hello world';
-}
+import 'element-qsa-scope';
 
-helloWorld();
+import './verita.scss';
+
+import './verita';

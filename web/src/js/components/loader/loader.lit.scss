@@ -1,0 +1,15 @@
+:host
+{
+  > div
+  {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    svg #shield-bg {
+      stroke: #E2035E;
+      stroke-width: 8px;
+    }
+  }
+}

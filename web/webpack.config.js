@@ -1,3 +1,5 @@
+// @ts-check
+
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path, { dirname } from 'path';
@@ -10,10 +12,11 @@ import { CycloneDxWebpackPlugin } from '@cyclonedx/webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(fs.readFileSync('./package.json'));
+const packageJson = JSON.parse(fs.readFileSync('./package.json').toString());
 
-// const _ = process.argv.some(v => v === 'serve');
-
+/**
+ * @param {{[key: string]: any}} env
+ */
 const webConfig = function (env) {
   env = env || {};
   env.profile = env.profile || 'debug';
@@ -62,6 +65,7 @@ const webConfig = function (env) {
     resolve: resolve(),
     plugins: plugins(profile, [
       new CycloneDxWebpackPlugin({
+        // @ts-expect-error no export
         specVersion: '1.4',
         outputLocation: './bom',
       }),
@@ -119,7 +123,7 @@ const webConfig = function (env) {
     devServer: {
       historyApiFallback: true,
       host: '0.0.0.0',
-      port: 8182,
+      port: 7182,
       allowedHosts: 'all',
       client: {
         overlay: {
@@ -145,27 +149,19 @@ const webConfig = function (env) {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
         'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
       },
-      proxy: {
-        '/api': {
-          target: 'http://127.0.0.1:31338',
+      proxy: [
+        {
+          context: ['/api'],
+          target: 'http://127.0.0.1:10666',
         },
-        '/static': {
-          target: 'http://127.0.0.1:31338',
-        },
-        headers: {
-          'Content-Security-Policy': [
-            'default-src *; style-src * \'unsafe-inline\'; script-src * \'unsafe-inline\' \'unsafe-eval\'; ' +
-            'img-src * data: \'unsafe-inline\'; connect-src * \'unsafe-inline\'; frame-src *;',
-          ],
-        },
-      },
+      ],
     },
   };
 
   if (env['bundle-analyzer'] === 'true') {
     out.plugins.push(
       new BundleAnalyzerPlugin({
-        analyzerPort: 8184,
+        analyzerPort: 7184,
         openAnalyzer: false,
       }),
     );

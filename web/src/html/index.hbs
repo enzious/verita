@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+    <meta name="theme-color" content="#292f35" />
+    <link id="favicon" rel="icon" type="" sizes="16x16" href="img/logo_16x16.png" />
+    <title>Verita</title>
+    <style type="text/css">
+      body > verita-app > svg {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 240px;
+        height: 240px;
+      }
+
+      body > verita-app > svg #shield-bg {
+        stroke: #E2035E;
+        stroke-width: 8px;
+      }
+
+      {{{ inline 'src/css/components/loader.css' }}}
+    </style>
+
+    <script type="text/javascript" src="app.properties.js?{{{ htmlWebpackPlugin.options.cacheBreaker }}}"></script>
+  </head>
+  <body style="background: #030315;">
+    <verita-app>
+      {{{ inline 'src/img/verita-logo.svg' }}}
+    </verita-app>
+  </body>
+</html>
