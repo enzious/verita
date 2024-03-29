@@ -4,7 +4,7 @@ use smart_default::SmartDefault;
 
 pub type RealmId = i32;
 
-#[derive(Clone, Debug, SmartDefault)]
+#[derive(Clone, Debug, Serialize, SmartDefault)]
 pub struct Realm {
   pub id: Option<RealmId>,
   pub name: String,

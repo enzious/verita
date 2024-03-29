@@ -9,7 +9,7 @@ pub fn build(config: &mut web::ServiceConfig) {
     .service(
       Scope::new("/api")
         .service(session::build())
-        .service(web::resource("/").route(web::get().to(hello::hello))),
+        .service(hello::hello),
     )
     .service(Files::new("/", "./static/").prefer_utf8(true));
 }

@@ -7,6 +7,15 @@ use super::RepoError;
 pub struct RealmRepo;
 
 impl RealmRepo {
+  pub async fn get_realm_by_name(
+    db_client: &PgClient<'_>,
+    realm: &str,
+  ) -> Result<Option<Realm>, RepoError> {
+    let stmt = db_client.prepare_cached(STMT_GET_REALM_BY_NAME).await?;
+    let rows = db_client.query(&stmt, &[&realm]).await?;
+    Ok(rows.get(0).map(|row| row.into()))
+  }
+
   pub async fn insert_realm(db_client: &PgClient<'_>, realm: &Realm) -> Result<Realm, RepoError> {
     let stmt = db_client.prepare_cached(STMT_INSERT_REALM).await?;
     let rows = db_client
@@ -28,6 +37,22 @@ impl RealmRepo {
   }
 }
 
+static STMT_GET_REALM_BY_NAME: &'static str = r#"
+
+SELECT *
+FROM verita.realm
+WHERE name = $1
+
+"#;
+
+static STMT_GET_OPERATOR_REALM: &'static str = r#"
+
+SELECT *
+FROM verita.realm
+WHERE operator = true
+
+"#;
+
 static STMT_INSERT_REALM: &'static str = r#"
 
 INSERT INTO verita.realm (
@@ -38,13 +63,5 @@ INSERT INTO verita.realm (
 )
 VALUES ($1, $2, $3, $4)
 RETURNING *;
-
-"#;
-
-static STMT_GET_OPERATOR_REALM: &'static str = r#"
-
-SELECT *
-FROM verita.realm
-WHERE operator = true
 
 "#;

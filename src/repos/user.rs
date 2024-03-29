@@ -27,6 +27,18 @@ impl UserRepo {
     Ok(rows.get(0).map(|row| row.into()))
   }
 
+  pub async fn get_user_by_username_email(
+    db_client: &PgClient<'_>,
+    realm_id: RealmId,
+    user: &str,
+  ) -> Result<Option<User>, RepoError> {
+    let stmt = db_client
+      .prepare_cached(STMT_GET_USER_BY_USERNAME_OR_EMAIL)
+      .await?;
+    let rows = db_client.query(&stmt, &[&realm_id, &user]).await?;
+    Ok(rows.get(0).map(|row| row.into()))
+  }
+
   pub async fn insert_user(db_client: &PgClient<'_>, user: &User) -> Result<User, RepoError> {
     let stmt = db_client.prepare_cached(STMT_INSERT_USER).await?;
     let rows = db_client
@@ -137,6 +149,14 @@ static STMT_GET_USER_BY_USERNAME: &'static str = r#"
 SELECT *
 FROM verita."user"
 WHERE realm_id = $1 AND username = $2
+
+"#;
+
+static STMT_GET_USER_BY_USERNAME_OR_EMAIL: &'static str = r#"
+
+SELECT *
+FROM verita."user"
+WHERE realm_id = $1 AND (username = $2 OR email = $2)
 
 "#;
 

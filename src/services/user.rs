@@ -3,7 +3,11 @@ use fuzion_commons::db::{PgClient, PgClientError};
 use thiserror::Error;
 
 use crate::{
-  dao::user::{UserCredential, UserId},
+  dao::{
+    credential::CredentialConfig,
+    realm::RealmId,
+    user::{UserCredential, UserId},
+  },
   repos::{credential::CredentialRepo, user::UserRepo, RepoError},
 };
 
@@ -23,7 +27,7 @@ impl UserService {
     let user_credential = UserRepo::get_user_credential_by_user_id(db_client, user_id)
       .await?
       .ok_or(UserServiceError::NoUserCredential)?;
-    let credential_config =
+    let credential_config: CredentialConfig =
       CredentialRepo::get_credential_config_by_realm_id(db_client, user.realm_id)
         .await?
         .ok_or(UserServiceError::InternalError)?;

@@ -10,6 +10,7 @@ use fuzion_commons::logging;
 
 pub mod apis;
 pub mod dao;
+pub mod dto;
 pub mod migrations;
 pub mod repos;
 pub mod server;
