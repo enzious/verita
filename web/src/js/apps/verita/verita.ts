@@ -7,6 +7,7 @@ import { historyContext } from 'fuzionkit/utils/history.js';
 import { createBrowserHistory } from 'history';
 import { extract } from 'fuzionkit/context/extract.js';
 import { Router, routerContext } from 'fuzionkit/router/context.js';
+import { ClientApi, clientApi, clientApiContext } from 'js/modules/client-api';
 
 import store from './store';
 
@@ -50,6 +51,16 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
   @provide({ context: historyContext })
   @property({ attribute: false })
   history = createBrowserHistory();
+
+  @provide({ context: clientApiContext })
+  @property({ attribute: false })
+  clientApi: ClientApi;
+
+  constructor() {
+    super();
+
+    this.clientApi = clientApi('/api');
+  }
 
   render(): unknown {
     // return html`<verita-loader></verita-loader>`;

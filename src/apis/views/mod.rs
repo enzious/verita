@@ -3,5 +3,5 @@ use actix_web::*;
 mod login;
 
 pub fn build() -> Scope {
-  Scope::new("/session").service(login::submit)
+  Scope::new("/views").service(login::init)
 }

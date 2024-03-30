@@ -1,6 +1,7 @@
 use actix_web::dev::Server;
 use actix_web::*;
 use colored::Colorize;
+use fuzion_commons::config::DatabaseConfigError;
 use thiserror::Error;
 
 use crate::apis;
@@ -16,7 +17,7 @@ pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ServerError> {
     &config.http.get_uri(),
   );
 
-  let db_pool = config.database.get_db_pool().await;
+  let db_pool = config.database.get_db_pool().await?;
 
   let srv = {
     let config = config.to_owned();
@@ -39,4 +40,7 @@ pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ServerError> {
 }
 
 #[derive(Debug, Error)]
-pub enum ServerError {}
+pub enum ServerError {
+  #[error(transparent)]
+  DatabaseConfigError(#[from] DatabaseConfigError),
+}

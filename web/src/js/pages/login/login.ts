@@ -1,6 +1,9 @@
-import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
+import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
+
+import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
+import { ClientApi, clientApiContext } from 'js/modules/client-api';
 
 import 'js/components/loader/loader';
 import 'fuzionkit/inputs/button/button.js';
@@ -10,10 +13,29 @@ import 'fuzionkit/register/register.js';
 import 'fuzionkit/panel/panel.js';
 
 import styles from './login.lit.scss?lit';
+import { Realm } from 'js/dto/realm';
 
 @customElement('verita-login-page')
 export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(LitElement) {
   static styles = [ styles ];
+
+  @consume({ context: clientApiContext })
+  clientApi: ClientApi;
+
+  @state()
+  realm: Realm | null = null;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    this.initialize();
+  }
+
+  async initialize() {
+    const { clientApi } = this;
+
+    await clientApi.post<Realm>('/views/login', { realm: 'verita' });
+  }
 
   render(): unknown {
     return html`

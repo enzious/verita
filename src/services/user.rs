@@ -5,7 +5,6 @@ use thiserror::Error;
 use crate::{
   dao::{
     credential::CredentialConfig,
-    realm::RealmId,
     user::{UserCredential, UserId},
   },
   repos::{credential::CredentialRepo, user::UserRepo, RepoError},
