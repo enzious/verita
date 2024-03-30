@@ -160,9 +160,9 @@ impl SetupService {
 
 #[derive(Debug, Error, ResponseError)]
 pub enum SetupServiceError {
-  #[error("admin username taken")]
+  #[error("admin_username_taken")]
   AdminUsernameTaken,
-  #[error("internal error")]
+  #[error("internal_error")]
   InternalError,
   #[error(transparent)]
   PostgresError(#[from] PgClientError),

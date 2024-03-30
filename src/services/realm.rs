@@ -21,9 +21,9 @@ impl RealmService {
 
 #[derive(Debug, Error, ResponseError)]
 pub enum RealmServiceError {
-  #[error("internal error")]
+  #[error("internal_error")]
   InternalError,
-  #[error("invalid realm")]
+  #[error("invalid_realm")]
   InvalidRealm,
   #[error(transparent)]
   PostgresError(#[from] PgClientError),

@@ -6,6 +6,7 @@ pub struct LoginInitRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LoginRequest {
   pub realm_id: RealmId,
   pub user: String,

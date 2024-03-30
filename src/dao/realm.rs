@@ -7,6 +7,7 @@ pub type RealmId = i32;
 
 #[derive(Clone, Debug, Serialize, SmartDefault, TS)]
 #[ts(export, export_to = "../web/src/js/dto/realm.ts")]
+#[serde(rename_all = "camelCase")]
 pub struct Realm {
   pub id: Option<RealmId>,
   pub name: String,

@@ -2,8 +2,11 @@ import { consume } from '@lit/context';
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
+import { ChangeEvent, EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
+import { LoginValue } from 'fuzionkit/login/login.js';
 import { ClientApi, clientApiContext } from 'js/modules/client-api';
+import { Realm } from 'js/dto/realm';
+import { SessionService } from 'js/services/session';
 
 import 'js/components/loader/loader';
 import 'fuzionkit/inputs/button/button.js';
@@ -13,7 +16,6 @@ import 'fuzionkit/register/register.js';
 import 'fuzionkit/panel/panel.js';
 
 import styles from './login.lit.scss?lit';
-import { Realm } from 'js/dto/realm';
 
 @customElement('verita-login-page')
 export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(LitElement) {
@@ -25,8 +27,22 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
   @state()
   realm: Realm | null = null;
 
+  @state()
+  submitting = false;
+
+  @state()
+  loginValue?: LoginValue;
+
+  @state()
+  loginError?: string;
+
+  sessionService: SessionService;
+
   connectedCallback(): void {
     super.connectedCallback();
+    const { clientApi } = this;
+
+    this.sessionService = new SessionService(clientApi);
 
     this.initialize();
   }
@@ -34,44 +50,66 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
   async initialize() {
     const { clientApi } = this;
 
-    await clientApi.post<Realm>('/views/login', { realm: 'verita' });
+    const {
+      data: realm,
+    } = await clientApi.post<Realm>('/views/login', { realm: 'verita' });
+
+    this.realm = realm;
   }
 
+  handleLoginChange = ({ detail: { value } }: CustomEvent<ChangeEvent<LoginValue>>) => {
+    this.loginValue = value;
+  };
+
+  handleLoginSubmit = async ({ detail: value }: CustomEvent<LoginValue>) => {
+    const { realm, sessionService } = this;
+    const { username, password } = value;
+
+    this.submitting = true;
+
+    try {
+      await sessionService.login(realm.id, username, password);
+    } catch (err) {
+      this.loginError = err.message;
+
+      this.submitting = false;
+    }
+  };
+
   render(): unknown {
-    return html`
-      <div class="stage">
-        <verita-loader></verita-loader>
+    const { handleLoginChange, handleLoginSubmit, loginError, loginValue, submitting } = this;
+    return this.realm
+      ? (
+        html`
+          <div class="stage">
+            <verita-loader></verita-loader>
 
-        <fzn-panel foggedglass="" style="width: 420px;">
-          <fzn-tabs
-            defaultValue="/login"
-          >
-            <fzn-tab
-              key="/login"
-            >
-              Login
-            </fzn-tab>
+            <fzn-panel foggedglass="" style="width: 420px;">
+              <fzn-tabs
+                defaultValue="/login"
+              >
+                <fzn-tab
+                  key="/login"
+                >
+                  Login
+                </fzn-tab>
+              </fzn-tabs>
 
-            <fzn-tab
-              key="/register"
-            >
-              Register
-            </fzn-tab>
-          </fzn-tabs>
-
-          <fzn-switch controlled="" currentPath="/login">
-            <fzn-route path="/login">
-              <fzn-login
-              ></fzn-login>
-            </fzn-route>
-
-            <fzn-route path="/register">
-              <fzn-register
-              ></fzn-register>
-            </fzn-route>
-          </fzn-switch>
-        </fzn-panel>
-      </span>
-    `;
+              <fzn-switch controlled="" currentPath="/login">
+                <fzn-route path="/login">
+                  <fzn-login
+                    @change=${handleLoginChange}
+                    .error=${loginError}
+                    @submit=${handleLoginSubmit}
+                    ?submitting=${submitting}
+                    .value=${loginValue}
+                  ></fzn-login>
+                </fzn-route>
+              </fzn-switch>
+            </fzn-panel>
+          </span>
+        `
+      )
+      : null;
   }
 }

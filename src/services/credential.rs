@@ -80,11 +80,11 @@ impl CredentialService {
 
 #[derive(Debug, Error, ResponseError)]
 pub enum CredentialServiceError {
-  #[error("internal error")]
+  #[error("internal_error")]
   InternalError,
   #[error(transparent)]
   PostgresError(#[from] PgClientError),
-  #[error("unspecified ring error")]
+  #[error("unspecified_ring_error")]
   RingUnspecifiedError(#[from] Unspecified),
 }
 

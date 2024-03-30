@@ -81,11 +81,11 @@ impl UserService {
 pub enum UserServiceError {
   #[error(transparent)]
   CredentialServiceError(#[from] CredentialServiceError),
-  #[error("internal error")]
+  #[error("internal_error")]
   InternalError,
-  #[error("no user")]
+  #[error("no_user")]
   InvalidUser,
-  #[error("no user credential")]
+  #[error("no_user_credential")]
   NoUserCredential,
   #[error(transparent)]
   PostgresError(#[from] PgClientError),

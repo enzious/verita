@@ -16,10 +16,33 @@ const modules = (
 ) => ({
   rules: [
     {
+      test: /\.js$/,
+      enforce: 'pre',
+      use: [
+        {
+          loader: 'source-map-loader',
+          options: {
+            /**
+             * @param {string} _url
+             * @param {string} resourcePath
+             */
+            filterSourceMappingUrl: (_url, resourcePath) => {
+              if (/tsee\//i.test(resourcePath)) {
+                return false;
+              }
+
+              return true;
+            },
+          },
+        },
+      ],
+    },
+    {
       test: /\.(sa|sc|c)ss$/,
       oneOf: [
         {
           resourceQuery: /lit/,
+          exclude: path.resolve(__dirname, '../node_modules/'),
           use: [
             { loader: 'lit-scss-loader', options: { minify: false } },
             { loader: path.resolve(__dirname, './escape-lit-scss.js') },
@@ -38,7 +61,7 @@ const modules = (
               loader: 'sass-loader',
               options: {
                 sassOptions: {
-                  includePaths: [ '.', './src', './node_modules' ],
+                  includePaths: [ '.', './src', '../node_modules' ],
                 },
                 sourceMap: true,
               },
@@ -54,7 +77,7 @@ const modules = (
               loader: 'sass-loader',
               options: {
                 sassOptions: {
-                  includePaths: [ '.', './src', './node_modules' ],
+                  includePaths: [ '.', './src', '../node_modules' ],
                 },
                 sourceMap: true,
               },
@@ -65,6 +88,7 @@ const modules = (
     },
     {
       test: /\.(png|jpg|gif|woff|woff2)/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       dependency: { not: [ 'url' ] },
       use: [
         {
@@ -79,6 +103,7 @@ const modules = (
     },
     {
       test: /\.(ttf|eot|svg|otf)/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       dependency: { not: [ 'url' ] },
       use: [
         {
@@ -91,6 +116,7 @@ const modules = (
     },
     {
       test: /\.tsx?$/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       oneOf: [
         {
           test: /\.tsx?$/,
@@ -118,6 +144,7 @@ const modules = (
     },
     {
       test: /\.m?jsx?$/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       oneOf: [
         {
           use: [
@@ -141,6 +168,7 @@ const modules = (
     },
     {
       test: /\.hbs$/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       use: [
         {
           loader: 'handlebars-loader',
@@ -161,11 +189,13 @@ const modules = (
     },
     {
       test: /\.pug$/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       include: path.join(__dirname, '../src'),
       loader: 'pug-loader',
     },
     {
       resourceQuery: /inline/,
+      exclude: path.resolve(__dirname, '../node_modules/'),
       type: 'asset/inline',
     },
   ],
