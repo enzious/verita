@@ -63,8 +63,6 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
   }
 
   render(): unknown {
-    // return html`<verita-loader></verita-loader>`;
-
     return html`
       <fzn-router
         .store=${store}
