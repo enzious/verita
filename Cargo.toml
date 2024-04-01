@@ -11,11 +11,14 @@ actix-rt = "2.9.0"
 actix-web = "4.5.1"
 actix-web-thiserror = "0.2.1"
 async-trait = "0.1.78"
+base64 = "0.22.0"
 chrono = { version = "0.4.35", features = [ "serde" ] }
 clap = { version = "4.5.3", features = [ "derive", "env" ] }
 colored = "2.1.0"
 deadpool-postgres = "0.12.1"
 fuzion-commons = { path = "../fuzion-commons" }
+hmac = "0.12.1"
+iter_tools = "0.15.0"
 lazy_static = "1.4.0"
 log = "0.4.21"
 postgres = "0.19.7"
@@ -24,6 +27,7 @@ ring = { version = "0.17.8", features = [ "std" ] }
 serde = "1.0.197"
 serde_derive = "1.0.197"
 serde_json = "1.0.114"
+sha2 = "0.10.8"
 slog = "2.7.0"
 smart-default = "0.7.1"
 thiserror = "1.0.58"

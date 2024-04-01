@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import fs from 'fs';
-import { modules, plugins, resolve } from './webpack/base.js';
+import { modules, plugins, resolve } from 'fuzionkit-build/webpack/base.js';
 import { CycloneDxWebpackPlugin } from '@cyclonedx/webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,31 +15,43 @@ const __dirname = dirname(__filename);
 const packageJson = JSON.parse(fs.readFileSync('./package.json').toString());
 
 /**
+ * @typedef {import('fuzionkit-build/webpack/base.js').BuildProfile} BuildProfile
+ */
+
+/**
+ * @param {{ [key: string]: any }=} env
+ * @param {{ [key: string]: any }=} options
+ * @return {BuildProfile}
+ */
+function buildProfile(env = {}, options) {
+  const { profile = 'debug' } = env;
+  /**
+   * @type {BuildProfile}
+   */
+  return {
+    name: profile,
+    mode: profile === 'debug' ? 'development' : 'production',
+    outputPath: './build' +
+      (options?.output ? `/${options?.output}` : '') +
+      `/${env.profile}`,
+    basePath: path.join(__dirname, '.'),
+    srcPath: path.join(__dirname, 'src'),
+    nodeModulesPath: path.join(__dirname, 'node_modules'),
+    tsconfigPath: path.join(__dirname, 'tsconfig.webpack.json'),
+  };
+}
+
+/**
  * @param {{[key: string]: any}} env
  */
 const webConfig = function (env) {
-  env = env || {};
-  env.profile = env.profile || 'debug';
-
-  const profile = (function (env) {
-    const out = {};
-    switch (env.profile) {
-    case 'debug':
-      out.name = 'debug';
-      out.mode = 'development';
-      out.outputPath = './build/debug';
-      break;
-    case 'release':
-      out.name = 'release';
-      out.mode = 'production';
-      out.outputPath = './build/release';
-      break;
-    }
-    return out;
-  })(env);
+  const profile = buildProfile(env);
 
   const indexCss = 'app.css';
 
+  /**
+   * @type {import('webpack').Configuration}
+   */
   const out = {
     name: 'web',
     mode: profile.mode,
@@ -62,7 +74,7 @@ const webConfig = function (env) {
       type: 'filesystem',
     },
     module: modules(profile),
-    resolve: resolve(),
+    resolve: resolve(profile),
     plugins: plugins(profile, [
       new CycloneDxWebpackPlugin({
         // @ts-expect-error no export
@@ -159,7 +171,7 @@ const webConfig = function (env) {
   };
 
   if (env['bundle-analyzer'] === 'true') {
-    out.plugins.push(
+    out.plugins?.push(
       new BundleAnalyzerPlugin({
         analyzerPort: 7184,
         openAnalyzer: false,
