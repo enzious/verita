@@ -5,6 +5,7 @@ use fuzion_commons::config::DatabaseConfigError;
 use thiserror::Error;
 
 use crate::apis;
+use crate::domain::jwt::VeritaJwtKey;
 
 pub mod config;
 
@@ -19,6 +20,8 @@ pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ServerError> {
 
   let db_pool = config.database.get_db_pool().await?;
 
+  let jwt_key = VeritaJwtKey::new("blah");
+
   let srv = {
     let config = config.to_owned();
 
@@ -28,6 +31,7 @@ pub async fn build(config: &FuzionVeritaConfig) -> Result<Server, ServerError> {
       app
         .app_data(web::Data::new(config.to_owned()))
         .app_data(web::Data::new(db_pool.to_owned()))
+        .app_data(web::Data::new(jwt_key.to_owned()))
         .configure(|config| apis::build(config))
     })
   }

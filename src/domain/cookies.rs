@@ -8,27 +8,24 @@ use hmac::digest::InvalidLength;
 use thiserror::Error;
 
 use crate::dao::realm::RealmId;
-use crate::dao::user::UserId;
 
-use super::jwt::{VeritaJwt, VeritaJwtError};
+use super::identity::Identity;
+use super::jwt::{VeritaJwt, VeritaJwtError, VeritaJwtKey};
 
 pub const VERITA_IDENTITY: &'static str = "VERITA_IDENTITY";
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Identity {
-  realm: RealmId,
-  subject: UserId,
-  session: String,
-}
-
+#[derive(Default)]
 pub struct SessionCookies {
   identity: HashMap<RealmId, Identity>,
 }
 
 impl SessionCookies {
-  pub fn from_request<'c>(request: &HttpRequest) -> Result<SessionCookies, SessionCookieError> {
+  pub fn from_request<'c>(
+    request: &HttpRequest,
+    key: &str,
+  ) -> Result<SessionCookies, SessionCookieError> {
     let mut identity: Vec<Identity> = match request.cookie("identity") {
-      Some(cookie) => VeritaJwt::<Vec<Identity>>::try_from(cookie.value())
+      Some(cookie) => VeritaJwt::<Vec<Identity>>::from_string(cookie.value(), key.as_bytes())
         .map(|jwt| jwt.into_data())
         .unwrap_or(vec![]),
       _ => vec![],
@@ -42,11 +39,19 @@ impl SessionCookies {
     })
   }
 
-  pub fn to_cookies<'c>(&self) -> Result<Vec<Cookie<'c>>, SessionCookieError> {
-    Ok(vec![Cookie::new(
+  pub fn insert_identity(&mut self, identity: Identity) -> Option<Identity> {
+    self.identity.insert(identity.realm, identity)
+  }
+
+  pub fn remove_identity(&mut self, realm_id: RealmId) -> Option<Identity> {
+    self.identity.remove(&realm_id)
+  }
+
+  pub fn to_cookie<'c>(&self) -> Result<Cookie<'c>, SessionCookieError> {
+    Ok(Cookie::new(
       VERITA_IDENTITY,
-      VeritaJwt::new(self.identity.to_owned()).to_string()?,
-    )])
+      VeritaJwt::new(self.identity.to_owned()).to_string(b"")?,
+    ))
   }
 
   pub fn get_identity(&self, realm_id: RealmId) -> Option<&Identity> {
@@ -59,7 +64,11 @@ impl FromRequest for SessionCookies {
   type Future = Box<dyn Future<Output = Result<Self, Self::Error>> + Unpin>;
 
   fn from_request(req: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
-    Box::new(future::ready(SessionCookies::from_request(&req)))
+    if let Some(VeritaJwtKey(key)) = req.app_data::<VeritaJwtKey>() {
+      return Box::new(future::ready(SessionCookies::from_request(&req, &key)));
+    }
+
+    Box::new(future::ready(Ok(Default::default())))
   }
 }
 

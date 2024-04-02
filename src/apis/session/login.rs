@@ -9,7 +9,7 @@ use crate::services::session::SessionService;
 pub async fn submit(
   db_client: PgClient<'_>,
   web::Json(body): web::Json<LoginRequest>,
-  _: SessionCookies,
+  mut session: SessionCookies,
 ) -> Result<HttpResponse, Error> {
   let LoginRequest {
     realm_id,
@@ -17,7 +17,9 @@ pub async fn submit(
     password,
   } = body;
 
-  SessionService::login(&db_client, realm_id, &user, &password).await?;
+  let identity = SessionService::login(&db_client, realm_id, &user, &password).await?;
 
-  Ok(HttpResponse::Ok().finish())
+  session.insert_identity(identity);
+
+  Ok(HttpResponse::Ok().cookie(session.to_cookie()?).finish())
 }

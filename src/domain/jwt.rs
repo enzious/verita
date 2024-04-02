@@ -8,6 +8,15 @@ use thiserror::Error;
 
 pub type HmacSha384 = Hmac<Sha384>;
 
+#[derive(Clone, Debug)]
+pub struct VeritaJwtKey(pub(super) String);
+
+impl VeritaJwtKey {
+  pub fn new(key: impl Into<String>) -> Self {
+    Self(key.into())
+  }
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct JwtHeader {
   alg: String,
@@ -27,7 +36,7 @@ impl<D> VeritaJwt<D> {
     }
   }
 
-  pub fn to_string<'a>(&'a self) -> Result<String, VeritaJwtError>
+  pub fn to_string<'a>(&'a self, key: &[u8]) -> Result<String, VeritaJwtError>
   where
     D: serde::ser::Serialize,
   {
@@ -38,7 +47,7 @@ impl<D> VeritaJwt<D> {
     .into_iter()
     .join(".");
 
-    let mut mac = HmacSha384::new_from_slice(b"")?;
+    let mut mac = HmacSha384::new_from_slice(key)?;
     mac.update(parts.as_bytes());
 
     let mac = BASE64_STANDARD.encode(mac.finalize().into_bytes());
@@ -46,18 +55,10 @@ impl<D> VeritaJwt<D> {
     Ok(format!("{}.{}", &parts, &mac))
   }
 
-  pub fn into_data(self) -> D {
-    self.data
-  }
-}
-
-impl<D> TryFrom<&str> for VeritaJwt<D>
-where
-  D: for<'b> serde::de::Deserialize<'b>,
-{
-  type Error = VeritaJwtError;
-
-  fn try_from(str: &str) -> Result<Self, Self::Error> {
+  pub fn from_string(str: &str, key: &[u8]) -> Result<VeritaJwt<D>, VeritaJwtError>
+  where
+    D: for<'b> serde::de::Deserialize<'b>,
+  {
     let mut parts = str.split(".");
 
     let (header, data, signature) = match (parts.nth(0), parts.nth(1), parts.nth(2)) {
@@ -65,7 +66,7 @@ where
       _ => return Err(VeritaJwtError::MissingPart),
     };
 
-    let mut mac = HmacSha384::new_from_slice(b"")?;
+    let mut mac = HmacSha384::new_from_slice(key)?;
     mac.update(format!("{}.{}", &header, &data).as_bytes());
 
     if mac.finalize().into_bytes()[..] != BASE64_STANDARD.decode(&signature)?[..] {
@@ -76,6 +77,10 @@ where
     let data = serde_json::from_slice(&BASE64_STANDARD.decode(data)?)?;
 
     Ok(VeritaJwt { header, data })
+  }
+
+  pub fn into_data(self) -> D {
+    self.data
   }
 }
 
