@@ -38,6 +38,7 @@ pub struct VeritaJwtHeader {
   typ: String,
 }
 
+#[derive(Debug)]
 pub struct VeritaJwt<D> {
   header: VeritaJwtHeader,
   data: D,
@@ -86,7 +87,7 @@ impl<D> VeritaJwt<D> {
   {
     let mut parts = str.split(".");
 
-    let (raw_header, data, signature) = match (parts.nth(0), parts.nth(1), parts.nth(2)) {
+    let (raw_header, data, signature) = match (parts.nth(0), parts.nth(0), parts.nth(0)) {
       (Some(header), Some(data), Some(signature)) => (header, data, signature),
       _ => return Err(VeritaJwtError::MissingPart),
     };
@@ -135,4 +136,29 @@ pub enum VeritaJwtError {
   MissingPart,
   #[error(transparent)]
   SerdeError(#[from] serde_json::Error),
+}
+
+#[cfg(test)]
+mod test {
+  use serde_json::json;
+
+  use super::VeritaJwt;
+
+  #[test]
+  pub fn test() {
+    let jwt = VeritaJwt::new(json! {{
+        "realm": 0,
+        "user": 0,
+        "session": "",
+    }});
+
+    println!("base: {:?}", &jwt);
+    println!("destination: {:?}", &jwt.to_string(b""));
+    println!(
+      "return: {:?}",
+      &jwt
+        .to_string(b"")
+        .map(|jwt| VeritaJwt::<serde_json::Value>::from_string(&jwt, b""))
+    );
+  }
 }
