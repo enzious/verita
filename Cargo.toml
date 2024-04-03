@@ -21,6 +21,7 @@ hmac = "0.12.1"
 iter_tools = "0.15.0"
 lazy_static = "1.4.0"
 log = "0.4.21"
+lz-str = "0.2.1"
 postgres = "0.19.7"
 rand = "0.8.5"
 ring = { version = "0.17.8", features = [ "std" ] }

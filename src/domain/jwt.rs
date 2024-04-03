@@ -1,3 +1,5 @@
+use std::string::FromUtf16Error;
+
 use actix_web_thiserror::ResponseError;
 use base64::prelude::*;
 use hmac::digest::InvalidLength;
@@ -17,14 +19,27 @@ impl VeritaJwtKey {
   }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub enum VeritaJwtAlg {
+  LZHS384,
+  HS384,
+}
+
+impl Default for VeritaJwtAlg {
+  fn default() -> Self {
+    // VeritaJwtAlg::HS384
+    VeritaJwtAlg::LZHS384
+  }
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
-pub struct JwtHeader {
-  alg: String,
+pub struct VeritaJwtHeader {
+  alg: VeritaJwtAlg,
   typ: String,
 }
 
 pub struct VeritaJwt<D> {
-  header: JwtHeader,
+  header: VeritaJwtHeader,
   data: D,
 }
 
@@ -42,15 +57,25 @@ impl<D> VeritaJwt<D> {
   {
     let parts = vec![
       BASE64_STANDARD.encode(serde_json::to_string(&self.header)?),
-      BASE64_STANDARD.encode(serde_json::to_string(&self.data)?),
+      match self.header.alg {
+        VeritaJwtAlg::HS384 => BASE64_STANDARD.encode(serde_json::to_string(&self.data)?),
+        VeritaJwtAlg::LZHS384 => {
+          lz_str::compress_to_base64(serde_json::to_string(&self.data)?.as_str())
+        }
+      },
     ]
     .into_iter()
     .join(".");
 
-    let mut mac = HmacSha384::new_from_slice(key)?;
-    mac.update(parts.as_bytes());
+    let mac = match self.header.alg {
+      VeritaJwtAlg::HS384 | VeritaJwtAlg::LZHS384 => {
+        let mut mac = HmacSha384::new_from_slice(key)?;
+        mac.update(parts.as_bytes());
+        mac.finalize().into_bytes()
+      }
+    };
 
-    let mac = BASE64_STANDARD.encode(mac.finalize().into_bytes());
+    let mac = BASE64_STANDARD.encode(mac);
 
     Ok(format!("{}.{}", &parts, &mac))
   }
@@ -61,20 +86,30 @@ impl<D> VeritaJwt<D> {
   {
     let mut parts = str.split(".");
 
-    let (header, data, signature) = match (parts.nth(0), parts.nth(1), parts.nth(2)) {
+    let (raw_header, data, signature) = match (parts.nth(0), parts.nth(1), parts.nth(2)) {
       (Some(header), Some(data), Some(signature)) => (header, data, signature),
       _ => return Err(VeritaJwtError::MissingPart),
     };
 
-    let mut mac = HmacSha384::new_from_slice(key)?;
-    mac.update(format!("{}.{}", &header, &data).as_bytes());
+    let header: VeritaJwtHeader = serde_json::from_slice(&BASE64_STANDARD.decode(raw_header)?)?;
 
-    if mac.finalize().into_bytes()[..] != BASE64_STANDARD.decode(&signature)?[..] {
-      return Err(VeritaJwtError::InvalidSignature);
-    }
+    match header.alg {
+      VeritaJwtAlg::HS384 | VeritaJwtAlg::LZHS384 => {
+        let mut mac = HmacSha384::new_from_slice(key)?;
+        mac.update(format!("{}.{}", &raw_header, &data).as_bytes());
 
-    let header = serde_json::from_slice(&BASE64_STANDARD.decode(header)?)?;
-    let data = serde_json::from_slice(&BASE64_STANDARD.decode(data)?)?;
+        if mac.finalize().into_bytes()[..] != BASE64_STANDARD.decode(&signature)?[..] {
+          return Err(VeritaJwtError::InvalidSignature);
+        }
+      }
+    };
+
+    let data = match header.alg {
+      VeritaJwtAlg::HS384 => serde_json::from_slice(&BASE64_STANDARD.decode(data)?)?,
+      VeritaJwtAlg::LZHS384 => serde_json::from_str(&String::from_utf16(
+        &lz_str::decompress_from_base64(data).ok_or(VeritaJwtError::LzDecompressError)?,
+      )?)?,
+    };
 
     Ok(VeritaJwt { header, data })
   }
@@ -89,11 +124,15 @@ pub enum VeritaJwtError {
   #[error(transparent)]
   Base64Error(#[from] base64::DecodeError),
   #[error(transparent)]
-  SerdeError(#[from] serde_json::Error),
+  FromUtf16Error(#[from] FromUtf16Error),
   #[error(transparent)]
   InvalidKeyLength(#[from] InvalidLength),
   #[error("invalid_signature")]
   InvalidSignature,
+  #[error("lz_decompress_error")]
+  LzDecompressError,
   #[error("missing_jwt_part")]
   MissingPart,
+  #[error(transparent)]
+  SerdeError(#[from] serde_json::Error),
 }
