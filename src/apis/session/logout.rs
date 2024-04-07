@@ -3,18 +3,19 @@ use fuzion_commons::db::PgClient;
 
 use crate::dao::realm::RealmId;
 use crate::domain::cookies::SessionCookies;
-use crate::services::session::SessionService;
+use crate::domain::jwt::VeritaJwtKey;
 
-#[post("/logout")]
-pub async fn submit(
-  db_client: PgClient<'_>,
-  web::Query(Query { realm_id }): web::Query<Query>,
+#[get("/logout")]
+pub async fn post(
+  _db_client: PgClient<'_>,
+  key: web::Data<VeritaJwtKey>,
+  web::Query(Query { realm }): web::Query<Query>,
   mut session: SessionCookies,
 ) -> Result<HttpResponse, Error> {
-  if let Some(identity) = session.remove_identity(realm_id) {
-    SessionService::logout(&db_client, &identity).await?;
+  if let Some(_identity) = session.remove_identity(realm) {
+    // SessionService::logout(&db_client, &identity).await?;
 
-    return Ok(HttpResponse::Ok().cookie(session.to_cookie()?).finish());
+    return Ok(HttpResponse::Ok().cookie(session.to_cookie(&key)?).finish());
   }
 
   Ok(HttpResponse::Ok().finish())
@@ -22,5 +23,5 @@ pub async fn submit(
 
 #[derive(Deserialize)]
 pub struct Query {
-  realm_id: RealmId,
+  realm: RealmId,
 }

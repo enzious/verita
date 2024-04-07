@@ -27,8 +27,7 @@ pub enum VeritaJwtAlg {
 
 impl Default for VeritaJwtAlg {
   fn default() -> Self {
-    // VeritaJwtAlg::HS384
-    VeritaJwtAlg::LZHS384
+    VeritaJwtAlg::HS384
   }
 }
 

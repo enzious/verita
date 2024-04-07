@@ -15,4 +15,11 @@ export class SessionService {
       { user, password, realmId },
     ));
   }
+
+  async logout(realmId: Realm['id']): Promise<void> {
+    const { data: _ } = await wrapResponseError(this.clientApi.get<unknown>(
+      'session/logout',
+      { params: { realm: realmId } },
+    ));
+  }
 }

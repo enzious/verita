@@ -7,6 +7,7 @@ import { LoginValue } from 'fuzionkit/login/login.js';
 import { ClientApi, clientApiContext } from 'js/modules/client-api';
 import { Realm } from 'js/dto/realm';
 import { SessionService } from 'js/services/session';
+import { VeritaGate, veritaGateContext } from 'js/components/verita/verita';
 
 import 'js/components/loader/loader';
 import 'fuzionkit/inputs/button/button.js';
@@ -23,6 +24,9 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
 
   @consume({ context: clientApiContext })
   clientApi: ClientApi;
+
+  @consume({ context: veritaGateContext })
+  veritaGate: VeritaGate;
 
   @state()
   realm: Realm | null = null;
@@ -62,13 +66,15 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
   };
 
   handleLoginSubmit = async ({ detail: value }: CustomEvent<LoginValue>) => {
-    const { realm, sessionService } = this;
+    const { realm, sessionService, veritaGate } = this;
     const { username, password } = value;
 
     this.submitting = true;
 
     try {
       await sessionService.login(realm.id, username, password);
+
+      veritaGate.loggedIn();
     } catch (err) {
       this.loginError = err.message;
 
@@ -78,6 +84,7 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
 
   render(): unknown {
     const { handleLoginChange, handleLoginSubmit, loginError, loginValue, submitting } = this;
+
     return this.realm
       ? (
         html`
@@ -95,7 +102,7 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
                 </fzn-tab>
               </fzn-tabs>
 
-              <fzn-switch controlled="" currentPath="/login">
+              <fzn-switch currentPath="/login">
                 <fzn-route path="/login">
                   <fzn-login
                     @change=${handleLoginChange}

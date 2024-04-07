@@ -2,13 +2,15 @@ use actix_web::*;
 use fuzion_commons::db::PgClient;
 
 use crate::domain::cookies::SessionCookies;
+use crate::domain::jwt::VeritaJwtKey;
 use crate::dto::login::LoginRequest;
 use crate::services::session::SessionService;
 
 #[post("/login")]
-pub async fn submit(
+pub async fn post(
   db_client: PgClient<'_>,
   web::Json(body): web::Json<LoginRequest>,
+  key: web::Data<VeritaJwtKey>,
   mut session: SessionCookies,
 ) -> Result<HttpResponse, Error> {
   let LoginRequest {
@@ -21,5 +23,5 @@ pub async fn submit(
 
   session.insert_identity(identity);
 
-  Ok(HttpResponse::Ok().cookie(session.to_cookie()?).finish())
+  Ok(HttpResponse::Ok().cookie(session.to_cookie(&key)?).finish())
 }
