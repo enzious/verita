@@ -14,7 +14,7 @@ export type ReducerTypes<T extends { [key: string]: ((_state: unknown, _action: 
   [K in keyof T]: T[K] extends ((_state: unknown, _action: UnknownAction) => infer R) ? R : never
 };
 
-export const rootSaga: Saga = function * root () {
+export const rootSaga: Saga = function * root() {
   yield all([]);
 };
 

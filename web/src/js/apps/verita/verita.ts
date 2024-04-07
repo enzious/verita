@@ -13,8 +13,8 @@ import { ClientApi, clientApi, clientApiContext } from 'js/modules/client-api';
 import store from './store';
 
 import 'fuzionkit/router/router.js';
-import 'fuzionkit/shell/shell.js';
 import 'js/components/verita/verita';
+import 'js/components/client-shell/client-shell';
 import 'js/pages/landing/landing';
 import 'js/pages/login/login';
 
@@ -91,13 +91,15 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
           authenticated !== null
             ? authenticated
               ? html`
-                <fzn-shell>
+                <fzn-client-shell
+                  logoText="Verita"
+                >
                   <fzn-router
                     .store=${store}
                   >
                     ${buildSwitches(routes)}
                   </fzn-router>
-                </fzn-shell>
+                </fzn-client-shell>
               `
               : html`
                 <verita-login-page></verita-login-page>
