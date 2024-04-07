@@ -51,7 +51,7 @@ export default class ClientShell extends EnhancedEventTargetMixin<
     const { authenticated, handleUserBadgeClick } = this;
 
     return html`
-      <fzn-shell>
+      <fzn-shell logoText="Verita">
         <slot></slot>
 
         <slot slot="floating" name="floating"></slot>
@@ -68,7 +68,7 @@ export default class ClientShell extends EnhancedEventTargetMixin<
           }
         </fzn-shell-user-badge>
 
-        <verita-drawer></verita-drawer>
+        <verita-drawer slot="drawer"></verita-drawer>
       </fzn-shell>
     `;
   }

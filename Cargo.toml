@@ -16,7 +16,7 @@ chrono = { version = "0.4.35", features = [ "serde" ] }
 clap = { version = "4.5.3", features = [ "derive", "env" ] }
 colored = "2.1.0"
 deadpool-postgres = "0.12.1"
-fuzion-commons = { path = "../fuzion-commons" }
+fuzion-commons = { git = "https://github.com/fzn-im/fuzion-commons.git", version = "0.1.0" }
 hmac = "0.12.1"
 iter_tools = "0.15.0"
 lazy_static = "1.4.0"

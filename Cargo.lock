@@ -872,6 +872,7 @@ dependencies = [
 [[package]]
 name = "fuzion-commons"
 version = "0.1.0"
+source = "git+https://github.com/fzn-im/fuzion-commons.git#ea35e9e41bd0bb34ac028cf36468e31353e7e375"
 dependencies = [
  "actix-web",
  "actix-web-thiserror",
