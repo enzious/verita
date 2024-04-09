@@ -21,7 +21,13 @@ pub async fn post(
 
   let identity = SessionService::login(&db_client, realm_id, &user, &password).await?;
 
-  session.insert_identity(identity);
+  session.insert_identity(identity.to_owned());
 
-  Ok(HttpResponse::Ok().cookie(session.to_cookie(&key)?).finish())
+  let identity = SessionService::get_identity_dto(&db_client, &identity).await?;
+
+  Ok(
+    HttpResponse::Ok()
+      .cookie(session.to_cookie(&key)?)
+      .json(&identity),
+  )
 }

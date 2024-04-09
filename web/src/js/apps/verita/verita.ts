@@ -1,14 +1,16 @@
 import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
 import { LitElement, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { SwitchRoute, buildSwitches } from 'fuzionkit/router/switch.js';
-import { provide } from '@lit/context';
+import { ContextRoot, provide } from '@lit/context';
 import { createBrowserHistory } from 'history';
 
 import { historyContext } from 'fuzionkit/utils/history.js';
 import { extract } from 'fuzionkit/context/extract.js';
 import { Router, routerContext } from 'fuzionkit/router/context.js';
 import { ClientApi, clientApi, clientApiContext } from 'js/modules/client-api';
+import { Identity } from 'js/dto/identity';
+import { identityContext } from 'js/domain/identity';
 
 import store from './store';
 
@@ -55,43 +57,51 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
   @property({ attribute: false })
   history = createBrowserHistory();
 
+  @provide({ context: identityContext })
+  @property({ attribute: false })
+  identity: Identity;
+
   @provide({ context: clientApiContext })
   @property({ attribute: false })
   clientApi: ClientApi;
-
-  @state()
-  authenticated = null;
 
   veritaOptions = {
     endpoint: '/api',
     useGateSlot: false,
   };
 
+  contextRoot = new ContextRoot();
+
   constructor() {
     super();
 
+    this.contextRoot.attach(this.parentElement);
     this.clientApi = clientApi('/api');
   }
 
-  handleAuthenticatedChange = ({
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
+  handleIdentityChange = ({
     detail: value,
-  }: CustomEvent<boolean>) => {
-    this.authenticated = value;
+  }: CustomEvent<Identity>) => {
+    this.identity = value;
   };
 
   render(): unknown {
-    const { authenticated, handleAuthenticatedChange, veritaOptions } = this;
+    const { handleIdentityChange, identity, veritaOptions } = this;
 
     return html`
       <verita-gate
         .options=${veritaOptions}
-        @authenticated-change=${handleAuthenticatedChange}
+        @identity-change=${handleIdentityChange}
       >
         ${
-          authenticated !== null
-            ? authenticated
+          identity !== undefined
+            ? identity
               ? html`
-                <fzn-client-shell
+                <verita-client-shell
                   logoText="Verita"
                 >
                   <fzn-router
@@ -99,7 +109,7 @@ export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(
                   >
                     ${buildSwitches(routes)}
                   </fzn-router>
-                </fzn-client-shell>
+                </verita-client-shell>
               `
               : html`
                 <verita-login-page></verita-login-page>

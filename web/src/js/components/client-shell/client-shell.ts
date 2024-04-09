@@ -4,9 +4,11 @@ import { consume } from '@lit/context';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
-import { VeritaGate, authenticatedContext, veritaGateContext } from 'js/components/verita/verita';
+import { VeritaGate, veritaGateContext } from 'js/components/verita/verita';
 import { SessionService } from 'js/services/session';
 import { ClientApi, clientApiContext } from 'js/modules/client-api';
+import { identityContext } from 'js/domain/identity';
+import { Identity } from 'js/dto/identity';
 
 import 'fuzionkit/shell/shell.js';
 import 'fuzionkit/fa-icon/fa-icon.js';
@@ -15,7 +17,7 @@ import 'js/components/client-shell/drawer';
 import styles from './client-shell.lit.scss?lit';
 import userBadgeStyles from './shell-user-badge.lit.scss?lit';
 
-@customElement('fzn-client-shell')
+@customElement('verita-client-shell')
 export default class ClientShell extends EnhancedEventTargetMixin<
   typeof LitElement,
   ClientShell
@@ -25,8 +27,8 @@ export default class ClientShell extends EnhancedEventTargetMixin<
   @consume({ context: clientApiContext })
   clientApi: ClientApi;
 
-  @consume({ context: authenticatedContext })
-  authenticated: boolean;
+  @consume({ context: identityContext, subscribe: true })
+  identity: Identity;
 
   @consume({ context: veritaGateContext })
   veritaGate: VeritaGate;
@@ -35,6 +37,7 @@ export default class ClientShell extends EnhancedEventTargetMixin<
 
   connectedCallback(): void {
     super.connectedCallback();
+
     const { clientApi } = this;
 
     this.sessionService = new SessionService(clientApi);
@@ -48,7 +51,7 @@ export default class ClientShell extends EnhancedEventTargetMixin<
   };
 
   render(): unknown {
-    const { authenticated, handleUserBadgeClick } = this;
+    const { handleUserBadgeClick, identity } = this;
 
     return html`
       <fzn-shell logoText="Verita">
@@ -59,11 +62,15 @@ export default class ClientShell extends EnhancedEventTargetMixin<
         <fzn-shell-user-badge
           @click=${handleUserBadgeClick}
           slot="status"
-          username=${ifDefined(authenticated ? 'User' : undefined)}
+          username=${ifDefined(identity ? identity.username : undefined)}
         >
           ${
-            authenticated
-              ? html`<fa-icon slot="postfix-icon" type="fa-solid fa-arrow-right-from-bracket"></fa-icon>`
+            identity
+              ? html`
+                <fa-icon
+                  slot="postfix-icon"
+                  type="fa-solid fa-arrow-right-from-bracket"
+                ></fa-icon>`
               : null
           }
         </fzn-shell-user-badge>

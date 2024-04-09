@@ -4,6 +4,8 @@ use thiserror::Error;
 
 use crate::dao::realm::RealmId;
 use crate::domain::identity::Identity;
+use crate::dto::identity::Identity as IdentityDto;
+use crate::repos::realm::RealmRepo;
 use crate::repos::user::UserRepo;
 use crate::repos::RepoError;
 
@@ -31,6 +33,27 @@ impl SessionService {
       })?;
 
     Ok(Identity::new(realm_id, user_id, ""))
+  }
+
+  pub async fn get_identity_dto(
+    db_client: &PgClient<'_>,
+    identity: &Identity,
+  ) -> Result<IdentityDto, SessionServiceError> {
+    let Identity { realm, subject, .. } = identity;
+
+    let realm = RealmRepo::get_realm(db_client, *realm)
+      .await?
+      .ok_or(SessionServiceError::InternalError)?;
+
+    let user = UserRepo::get_user(db_client, *subject)
+      .await?
+      .ok_or(SessionServiceError::InternalError)?;
+
+    Ok(IdentityDto {
+      realm: realm.name,
+      realm_id: realm.id.ok_or(SessionServiceError::InternalError)?,
+      username: user.username,
+    })
   }
 
   pub async fn logout(

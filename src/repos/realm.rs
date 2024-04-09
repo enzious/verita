@@ -1,12 +1,21 @@
 use fuzion_commons::db::PgClient;
 
-use crate::dao::realm::Realm;
+use crate::dao::realm::{Realm, RealmId};
 
 use super::RepoError;
 
 pub struct RealmRepo;
 
 impl RealmRepo {
+  pub async fn get_realm(
+    db_client: &PgClient<'_>,
+    realm_id: RealmId,
+  ) -> Result<Option<Realm>, RepoError> {
+    let stmt = db_client.prepare_cached(STMT_GET_REALM_BY_ID).await?;
+    let rows = db_client.query(&stmt, &[&realm_id]).await?;
+    Ok(rows.get(0).map(|row| row.into()))
+  }
+
   pub async fn get_realm_by_name(
     db_client: &PgClient<'_>,
     realm: &str,
@@ -36,6 +45,14 @@ impl RealmRepo {
     Ok(rows.get(0).map(|row| row.into()))
   }
 }
+
+static STMT_GET_REALM_BY_ID: &'static str = r#"
+
+SELECT *
+FROM verita.realm
+WHERE id = $1
+
+"#;
 
 static STMT_GET_REALM_BY_NAME: &'static str = r#"
 

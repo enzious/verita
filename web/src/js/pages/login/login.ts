@@ -72,9 +72,9 @@ export class Login extends EnhancedEventTargetMixin<typeof LitElement, Login>(Li
     this.submitting = true;
 
     try {
-      await sessionService.login(realm.id, username, password);
+      const identity = await sessionService.login(realm.id, username, password);
 
-      veritaGate.loggedIn();
+      veritaGate.loggedIn(identity);
     } catch (err) {
       this.loginError = err.message;
 
