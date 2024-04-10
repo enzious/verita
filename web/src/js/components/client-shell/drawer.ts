@@ -1,5 +1,8 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { consume } from '@lit/context';
+
+import { Router, routerContext } from 'fuzionkit/router/context.js';
 
 import 'fuzionkit/tree';
 import 'fuzionkit/inputs/select/select.js';
@@ -8,11 +11,18 @@ import { TreeNode } from 'fuzionkit/tree';
 
 import styles from './drawer.lit.scss?lit';
 
+type DrawerItem = {
+  routeTo?: string;
+};
+
 @customElement('verita-drawer')
 class _VeritaDrawer extends LitElement {
   static styles = [ styles ];
 
-  nodes: TreeNode<unknown>[] = [
+  @consume({ context: routerContext, subscribe: true })
+  router: Router;
+
+  nodes: TreeNode<DrawerItem>[] = [
     {
       label: 'Manage',
       data: void 0,
@@ -21,23 +31,31 @@ class _VeritaDrawer extends LitElement {
       children: [
         {
           label: 'Clients',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/manage/clients',
+          },
         },
         {
           label: 'Roles',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/manage/roles',
+          },
         },
         {
           label: 'Groups',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/manage/groups',
+          },
         },
         {
           label: 'Sessions',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/manage/sessions',
+          },
         },
       ],
     },
@@ -49,34 +67,58 @@ class _VeritaDrawer extends LitElement {
       children: [
         {
           label: 'Realms',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/settings/realms',
+          },
         },
         {
           label: 'Authentication',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/settings/authentication',
+          },
         },
         {
           label: 'Identity providers',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/settings/identity',
+          },
         },
         {
           label: 'Federation',
-          data: void 0,
           weight: 0,
+          data: {
+            routeTo: '/settings/federation',
+          },
         },
       ],
     },
   ];
 
+  handleItemClick = (evt: CustomEvent<TreeNode<DrawerItem>>): void => {
+    const { router } = this;
+    const { detail: node } = evt;
+    const { routeTo } = node.data ?? {};
+
+    router.navigate(routeTo);
+  };
+
+  handleNodeMutation = (evt: CustomEvent<TreeNode<DrawerItem>>): void => {
+    const { detail: node } = evt;
+
+    console.log('node', node);
+  };
+
   render(): unknown {
-    const { nodes } = this;
+    const { handleItemClick, handleNodeMutation, nodes } = this;
 
     return html`
       <fzn-tree
         .nodeChildren=${nodes}
+        @item-click=${handleItemClick}
+        @node-mutation=${handleNodeMutation}
       >
         <div slot="top">
           <fzn-form-group
