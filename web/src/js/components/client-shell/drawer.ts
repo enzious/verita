@@ -12,7 +12,19 @@ import { TreeNode } from 'fuzionkit/tree';
 import styles from './drawer.lit.scss?lit';
 
 type DrawerItem = {
+  id?: string;
+  parentId?: string;
   routeTo?: string;
+};
+
+const flattenTree = (nodes: TreeNode<DrawerItem>[]) => {
+  const children = nodes.flatMap((node) => flattenTree(node.children ?? []));
+  const flatNodes = nodes.flatMap((node) => ({ ...node, children: undefined }));
+
+  return [
+    ...children,
+    ...flatNodes,
+  ];
 };
 
 @customElement('verita-drawer')
@@ -25,7 +37,9 @@ class _VeritaDrawer extends LitElement {
   nodes: TreeNode<DrawerItem>[] = [
     {
       label: 'Manage',
-      data: void 0,
+      data: {
+        id: 'manage',
+      },
       weight: 0,
       open: true,
       children: [
@@ -61,7 +75,9 @@ class _VeritaDrawer extends LitElement {
     },
     {
       label: 'Configure',
-      data: void 0,
+      data: {
+        id: 'configure',
+      },
       weight: 0,
       open: true,
       children: [
@@ -106,13 +122,23 @@ class _VeritaDrawer extends LitElement {
   };
 
   handleNodeMutation = (evt: CustomEvent<TreeNode<DrawerItem>>): void => {
+    const { nodes } = this;
     const { detail: node } = evt;
+    const { data: { id } } = node;
 
-    console.log('node', node);
+    if (id) {
+      const folder = nodes.find((node) => node.data?.id === id);
+
+      // if (folder) {
+      //   this.
+      // }
+    }
   };
 
   render(): unknown {
     const { handleItemClick, handleNodeMutation, nodes } = this;
+
+    console.log('flat2', flattenTree(this.nodes));
 
     return html`
       <fzn-tree
