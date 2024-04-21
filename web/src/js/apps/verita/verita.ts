@@ -1,7 +1,7 @@
 import { EnhancedEventTargetMixin } from 'fuzionkit/utils/events.js';
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { SwitchRoute, buildSwitches } from 'fuzionkit/router/switch.js';
+import { buildSwitches } from 'fuzionkit/router/switch.js';
 import { ContextRoot, provide } from '@lit/context';
 import { createBrowserHistory } from 'history';
 
@@ -12,24 +12,19 @@ import { ClientApi, clientApi, clientApiContext } from 'js/modules/client-api';
 import { Identity } from 'js/dto/identity';
 import { identityContext } from 'js/domain/identity';
 
+import { routes } from './routes';
 import store from './store';
 
 import 'fuzionkit/router/router.js';
 import 'js/components/verita/verita';
 import 'js/components/client-shell/client-shell';
-import 'js/pages/landing/landing';
-import 'js/pages/login/login';
 
-const routes: SwitchRoute[] = [
-  [
-    '/',
-    'verita-landing-page',
-  ],
-];
+import styles from './verita.lit.scss?lit';
 
 @customElement('verita-app')
 export class Verita extends EnhancedEventTargetMixin<typeof LitElement, Verita>(LitElement) {
   static styles = [
+    styles,
     css`
       * { box-sizing: border-box; }
 

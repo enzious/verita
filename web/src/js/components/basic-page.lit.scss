@@ -1,0 +1,22 @@
+*
+{
+  box-sizing: border-box;
+}
+
+:host
+{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > ::slotted(*),
+  > *
+  {
+    width: 100%;
+  }
+
+  > .body
+  {
+    padding: 8px;
+  }
+}

@@ -9,10 +9,12 @@ import { SessionService } from 'js/services/session';
 import { ClientApi, clientApiContext } from 'js/modules/client-api';
 import { identityContext } from 'js/domain/identity';
 import { Identity } from 'js/dto/identity';
+import { ViewService } from 'js/services/view';
 
 import 'fuzionkit/shell/shell.js';
 import 'fuzionkit/fa-icon/fa-icon.js';
 import 'js/components/client-shell/drawer';
+import { Realm } from 'js/dto/realm';
 
 import styles from './client-shell.lit.scss?lit';
 import userBadgeStyles from './shell-user-badge.lit.scss?lit';
@@ -33,7 +35,11 @@ export default class ClientShell extends EnhancedEventTargetMixin<
   @consume({ context: veritaGateContext })
   veritaGate: VeritaGate;
 
+  @property({ attribute: false })
+  realms?: Array<Realm>;
+
   sessionService: SessionService;
+  viewService: ViewService;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -41,6 +47,16 @@ export default class ClientShell extends EnhancedEventTargetMixin<
     const { clientApi } = this;
 
     this.sessionService = new SessionService(clientApi);
+    this.viewService = new ViewService(clientApi);
+
+    this.initialize();
+  }
+
+  async initialize(): Promise<void> {
+    const { viewService } = this;
+
+    const { realms } = await viewService.initShell();
+    this.realms = realms;
   }
 
   handleUserBadgeClick = async () => {
@@ -51,7 +67,7 @@ export default class ClientShell extends EnhancedEventTargetMixin<
   };
 
   render(): unknown {
-    const { handleUserBadgeClick, identity } = this;
+    const { handleUserBadgeClick, identity, realms } = this;
 
     return html`
       <fzn-shell logoText="Verita">
@@ -75,7 +91,10 @@ export default class ClientShell extends EnhancedEventTargetMixin<
           }
         </fzn-shell-user-badge>
 
-        <verita-drawer slot="drawer"></verita-drawer>
+        <verita-drawer
+          slot="drawer"
+          .realms=${realms}
+        ></verita-drawer>
       </fzn-shell>
     `;
   }

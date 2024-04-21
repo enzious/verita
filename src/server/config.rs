@@ -7,7 +7,6 @@ use clap::{ArgAction, Parser};
 use fuzion_commons::config::{
   clap_arg_to_log_level, DatabaseConfig, HttpConfigWithPublic, LoggingConfig,
 };
-use toml;
 
 const DEFAULT_CONFIG: &'static str = r##"encoding = "utf-8"
 

@@ -25,6 +25,12 @@ impl RealmRepo {
     Ok(rows.get(0).map(|row| row.into()))
   }
 
+  pub async fn get_realms(db_client: &PgClient<'_>) -> Result<Vec<Realm>, RepoError> {
+    let stmt = db_client.prepare_cached(STMT_GET_REALMS).await?;
+    let mut rows = db_client.query(&stmt, &[]).await?;
+    Ok(rows.drain(..).map(|ref row| row.into()).collect::<Vec<_>>())
+  }
+
   pub async fn insert_realm(db_client: &PgClient<'_>, realm: &Realm) -> Result<Realm, RepoError> {
     let stmt = db_client.prepare_cached(STMT_INSERT_REALM).await?;
     let rows = db_client
@@ -59,6 +65,13 @@ static STMT_GET_REALM_BY_NAME: &'static str = r#"
 SELECT *
 FROM verita.realm
 WHERE name = $1
+
+"#;
+
+static STMT_GET_REALMS: &'static str = r#"
+
+SELECT *
+FROM verita.realm
 
 "#;
 
